@@ -12,13 +12,7 @@ La racine du site, `/`, est la page d'accueil ; dans chaque app, la marque en ha
 
 ## Lancer tout en local
 
-Docker Desktop, et IozyTest cloné à côté de ce dépôt (la pile le construit depuis `../iozytest`) :
-
-```bash
-git clone https://github.com/RomainCharpentier/iozytest.git ../iozytest
-```
-
-Puis :
+Docker Desktop suffit pour IozyCore :
 
 ```bash
 cd iozycore/backend && docker compose up --build
@@ -26,7 +20,17 @@ cd iozycore/backend && docker compose up --build
 
 - http://localhost:8081/ : la page d'accueil
 - http://localhost:8081/core/ : IozyCore (API sur :8080)
-- http://localhost:8081/test/ : IozyTest
+- http://localhost:8081/test/ : IozyTest, s'il est lancé ; sinon une page le dit
+
+IozyTest est facultatif. Pour l'avoir aussi, clone-le à côté de ce dépôt (la pile le construit depuis `../iozytest`), puis lance la pile avec son profil :
+
+```bash
+git clone https://github.com/RomainCharpentier/iozytest.git ../iozytest
+```
+
+```bash
+cd iozycore/backend && docker compose --profile iozytest up --build
+```
 
 Depuis la racine, `npm run up` lance la même pile en arrière-plan et `npm run check` lance les contrôles du web d'IozyCore (après un `npm ci` dans `iozycore/web`).
 

@@ -121,8 +121,10 @@ de workflow de publication : cette image ne suit plus le code tant qu'il n'en a
 pas (`docker-compose.nas.yml` la tire toujours). Ses questions vivent dans le volume
 `iozyplay_data`.
 
-En local, le même montage vient avec `docker compose up --build` (IozyTest
-cloné à côté de ce dépôt, dans `../iozytest`), puis `http://localhost:8081/test/`.
+En local, IozyTest est facultatif : `docker compose up --build` lance IozyCore
+seul, et `/test/` répond par une courte page « IozyTest n'est pas lancé ». Pour
+l'avoir aussi, clone-le à côté de ce dépôt (`../iozytest`) et lance
+`docker compose --profile iozytest up --build`, puis `http://localhost:8081/test/`.
 
 La page d'accueil est construite avec le web (`iozycore/web/home/`) et servie
 par le même nginx à la racine. Dans chaque app, la marque en haut à gauche

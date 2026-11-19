@@ -201,8 +201,19 @@ try {
     'an old invitation (/play/room/join?room=AB12) is redirected to /test/ with its room',
     `received ${invitation.status} ${invitation.headers.get('location') ?? ''}`,
   )
+  // IozyTest is optional: when its container is absent, /test/ must say so in
+  // a page of its own (503), never a bare nginx 502.
   const blindtest = await demander('/test/api/health')
-  verifier(blindtest.status === 200, '/test/api/health answers 200', `received ${blindtest.status}`)
+  if (blindtest.status === 503) {
+    const page = await blindtest.text()
+    verifier(
+      page.includes('IozyTest n’est pas lancé'),
+      'IozyTest is not running, and /test/ says so in French',
+      `received 503 without the page: ${page.slice(0, 80)}`,
+    )
+  } else {
+    verifier(blindtest.status === 200, '/test/api/health answers 200', `received ${blindtest.status}`)
+  }
 } catch (cause) {
   problemes.push(`/ unreachable — ${cause.message}`)
 }
