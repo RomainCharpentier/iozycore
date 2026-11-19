@@ -237,7 +237,7 @@ Le découpage d'origine, et où il en est au 2026-11-19 :
 - **V2** : éditeur de types dynamique, app Web, calcul automatique de valeur, premières briques IA. *Livré* : types personnalisés (`/types`), app web (le client vivant), valeur de la collection, analyse d'annonce.
 - **V3** : requêtes en langage naturel (*livré* : Izy répond sur la collection), reconnaissance d'image IA (*livrée* pour le manga : photos d'annonce, puis import de l'étagère, lot 147), relations enrichies (sagas, adaptations) et nouveaux modules (Voyages, Restaurants, Objets de collection) : *pas commencés*.
 
-**Le téléphone passe par l'app web.** L'app iOS en SwiftUI est hors service depuis le 2026-08-29. L'app web s'installe sur l'écran d'accueil (PWA). Sans réseau, elle s'ouvre sur une copie de la collection gardée sur l'appareil, pour vérifier avant un achat (parcours 3). Reste à combler sur iPhone : le scan par caméra, que Safari ne sait pas faire sans une bibliothèque de lecture de code-barres.
+**Le téléphone passe par l'app web.** L'app iOS en SwiftUI est hors service depuis le 2026-08-29. L'app web s'installe sur l'écran d'accueil (PWA). Sans réseau, elle s'ouvre sur une copie de la collection gardée sur l'appareil, pour vérifier avant un achat (parcours 3). Le scan par caméra marche aussi sur iPhone : Safari n'ayant pas de lecteur de code-barres, l'app apporte le sien (lot 241).
 
 ---
 

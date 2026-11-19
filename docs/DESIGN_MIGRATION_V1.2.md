@@ -2294,6 +2294,16 @@ s'efface à chaque connexion, visite et déconnexion. Rien ne s'écrit depuis ce
 Vérifié : test de contrat (possédés 2, 4 ; manquants 1, 3), 764 tests web ; build de production
 avec service worker dans Chromium à 390 px, réseau coupé : la copie répond pour One Piece.
 
-Reste pour l'iPhone : le scan par caméra. Safari n'a pas `BarcodeDetector`, et le combler demande
-une bibliothèque de lecture de code-barres (`barcode-detector`, MIT, chargée seulement sur Safari et
-Firefox). Son ajout attend l'accord du propriétaire.
+### Lot 241 — Le scan par caméra sur iPhone
+
+Safari n'a pas `BarcodeDetector` : sur iPhone, le scan disait « pas supporté » et renvoyait à la
+saisie de l'ISBN. Le propriétaire a accepté une bibliothèque : `barcode-detector` 3.2.3 (MIT, lecteur
+zxing en WebAssembly). Elle n'est chargée que là où le navigateur n'a pas son lecteur, au moment où
+le scan démarre (415 Ko compressés). Son `.wasm` est servi par l'app (`/core/assets/`, en
+`application/wasm`), pas par le CDN public qu'elle prend par défaut. L'écran dit « Lecteur intégré à
+l'app : ce navigateur n'a pas le sien », et le bouton annonce « Préparation du lecteur… » pendant le
+chargement. Sans caméra, la saisie de l'ISBN reste le secours.
+
+Vérifié : tests du choix du lecteur et de l'adresse du `.wasm`, 768 tests web, typecheck, lint ;
+build de production dans Chromium privé de `BarcodeDetector`, une fausse caméra filmant un EAN-13 :
+le code 9782505000334 est lu et cherché. Pas essayé sur un vrai iPhone.
