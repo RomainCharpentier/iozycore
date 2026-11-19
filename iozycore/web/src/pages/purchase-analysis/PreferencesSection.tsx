@@ -78,7 +78,7 @@ function PreferencesForm({ saved }: { saved: CollectorPreferencesDto }) {
         />
       </label>
       {!discountValid && <p className="text-xs text-dangerText">Indique un nombre entier entre 0 et 100.</p>}
-      <label className="flex items-center gap-2 text-sm text-textDim">
+      <label className="flex min-h-11 items-center gap-2 text-sm text-textDim">
         <input
           type="checkbox"
           checked={avoidOutdated}
