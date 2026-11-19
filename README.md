@@ -4,7 +4,7 @@ IozyCore et le site des apps Iozy : des apps personnelles, auto-hébergées, ser
 
 | Dossier | Ce que c'est | Où ça vit sur le site |
 |---|---|---|
-| `iozycore/` | **IozyCore**, le catalogue de collection : mangas, jeux vidéo, jeux de société, ce qu'il te manque et ce que vaut une annonce. Backend Spring Boot, client web React, app iOS (hors service). | `/core/` (et `/api/`) |
+| `iozycore/` | **IozyCore**, le catalogue de collection : mangas, jeux vidéo, jeux de société, ce qu'il te manque et ce que vaut une annonce. Backend Spring Boot, client web React installable sur le téléphone. | `/core/` (et `/api/`) |
 | `docs/` | Déploiement, exploitation, conception, journal des lots. | — |
 | `tools/` | Outillage personnel, hors produit : lab d'entraînement à l'API Claude, graphe de code Nomik. | — |
 
