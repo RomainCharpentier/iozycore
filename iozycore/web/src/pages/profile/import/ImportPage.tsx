@@ -8,7 +8,7 @@ import { LienRetour } from '@/common/components/LienRetour'
 import type { ImportRemarque, ImportReport } from '@/common/types/api'
 
 /**
- * The return of "Emporter ma collection": the JSON file is given back, and the
+ * The return of "Télécharger en JSON" (Profile, "Mes données"): the JSON file is given back, and the
  * collection is rebuilt in this account.
  *
  * <h2>Two steps, and the first one costs nothing</h2>
@@ -49,7 +49,7 @@ export function ImportPage() {
       setDocument(contenu)
       analyse.mutate(contenu)
     } catch {
-      setErreurLecture('Ce fichier n’est pas du JSON lisible. Il faut le fichier téléchargé depuis « Emporter ma collection ».')
+      setErreurLecture('Ce fichier n’est pas du JSON lisible. Il faut le fichier téléchargé depuis Profil ▸ Mes données (« Télécharger en JSON »).')
     }
   }
 
@@ -63,7 +63,7 @@ export function ImportPage() {
       <EnTeteSection
         niveau={1}
         titre="Restaurer une collection"
-        sousTitre="Renvoie un fichier JSON téléchargé depuis « Emporter ma collection ». Rien n’est écrit avant que tu aies vu ce que l’import ferait : ce qui existe déjà est retrouvé, jamais dupliqué ni modifié."
+        sousTitre="Renvoie un fichier JSON téléchargé depuis Profil ▸ Mes données (« Télécharger en JSON »). Rien n’est écrit avant que tu aies vu ce que l’import ferait : ce qui existe déjà est retrouvé, jamais dupliqué ni modifié."
       />
 
       <div className="flex flex-col gap-2 rounded-xl bg-surface p-4">
