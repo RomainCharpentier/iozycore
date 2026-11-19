@@ -30,7 +30,7 @@ export function invaliderApresPossession(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: queryKeys.followedWorks.all })
   queryClient.invalidateQueries({ queryKey: ['ownerships'] })
   // The whole `insights` prefix: progress and calendar, but also stats, value,
-  // timeline, recap and discover. They all count what we own, and with a
+  // timeline and recap. They all count what we own, and with a
   // staleTime they would no longer refresh on the next mount.
   queryClient.invalidateQueries({ queryKey: ['insights'] })
   // What is missing to complete a series changes with what we own.

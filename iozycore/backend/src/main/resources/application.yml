@@ -40,6 +40,9 @@ iozycore:
     # media volume of the image): a cover is fetched from its host once,
     # never again. Without a writable folder they are served, not kept.
     cache-dir: ${COVERS_CACHE_DIR:/app/media/covers}
+    # The most the kept covers may weigh; past it, the oldest go and are read
+    # again from their host when asked.
+    cache-max-mb: ${COVERS_CACHE_MAX_MB:500}
     # The missing covers of the manga volumes (batch 194): a volume added by
     # number, by photo or during a provider outage has none, and nobody
     # presses "Retrouver les jaquettes manquantes". The catalogue fills them

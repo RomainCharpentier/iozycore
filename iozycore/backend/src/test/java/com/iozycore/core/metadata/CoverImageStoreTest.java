@@ -52,7 +52,7 @@ class CoverImageStoreTest {
     private final MutableClock clock = new MutableClock();
 
     private CoverImageStore store(FakeHost host) {
-        return new CoverImageStore(host, folder, clock, Duration.ZERO, Duration.ofMinutes(5));
+        return new CoverImageStore(host, folder, clock, Duration.ZERO, Duration.ofMinutes(5), Long.MAX_VALUE);
     }
 
     @Test
@@ -63,6 +63,26 @@ class CoverImageStoreTest {
         CoverImageStore afterRestart = store(host);
         assertThat(afterRestart.get(BNF)).hasValueSatisfying(image -> assertThat(image.contentType()).isEqualTo("image/jpeg"));
         assertThat(host.calls).hasSize(1);
+    }
+
+    @Test
+    void past_its_ceiling_the_folder_lets_the_oldest_covers_go() throws Exception {
+        CoverImage tenBytes = new CoverImage("image/jpeg", new byte[10]);
+        FakeHost host = new FakeHost().answering(new Found(tenBytes), new Found(tenBytes), new Found(tenBytes));
+        CoverImageStore store = new CoverImageStore(host, folder, clock, Duration.ZERO, Duration.ofMinutes(5), 25);
+        URI first = URI.create("https://catalogue.bnf.fr/couverture?id=1");
+
+        store.get(first);
+        java.nio.file.Files.setLastModifiedTime(folder.resolve(CoverImageStore.key(first) + ".jpg"),
+                java.nio.file.attribute.FileTime.fromMillis(0));
+        store.get(BNF);
+        store.get(BNF_OTHER);
+
+        try (var files = java.nio.file.Files.list(folder)) {
+            assertThat(files.map(f -> f.getFileName().toString()))
+                    .hasSize(2)
+                    .doesNotContain(CoverImageStore.key(first) + ".jpg");
+        }
     }
 
     @Test
@@ -105,7 +125,7 @@ class CoverImageStoreTest {
     void covers_are_still_served_when_no_folder_can_keep_them() throws Exception {
         Path aFile = java.nio.file.Files.createFile(folder.resolve("not-a-folder"));
         FakeHost host = new FakeHost().answering(new Found(JPEG));
-        CoverImageStore store = new CoverImageStore(host, aFile, clock, Duration.ZERO, Duration.ofMinutes(5));
+        CoverImageStore store = new CoverImageStore(host, aFile, clock, Duration.ZERO, Duration.ofMinutes(5), Long.MAX_VALUE);
 
         assertThat(store.get(BNF)).isPresent();
     }

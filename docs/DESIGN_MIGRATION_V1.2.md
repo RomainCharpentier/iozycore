@@ -2307,3 +2307,25 @@ chargement. Sans caméra, la saisie de l'ISBN reste le secours.
 Vérifié : tests du choix du lecteur et de l'adresse du `.wasm`, 768 tests web, typecheck, lint ;
 build de production dans Chromium privé de `BarcodeDetector`, une fausse caméra filmant un EAN-13 :
 le code 9782505000334 est lu et cherché. Pas essayé sur un vrai iPhone.
+
+### Lot 242 — Fin de la consolidation
+
+Ce qui restait après les lots 237 à 241 :
+
+- `USER_JOURNEYS.md` décrivait encore Découvrir (retiré au lot 222) et l'ancienne barre. Chaque
+  ancien parcours de Découvrir renvoie à l'écran qui l'a remplacé, Sorties est décrite en frise, la
+  vérification sans réseau (45 ter) et le scan sur iPhone y entrent, la carte suit les cinq
+  destinations.
+- Le client web de Découvrir (`discover`, `getLatestReleases`) n'était plus appelé : retiré. Les
+  routes du serveur restent, listées comme sans écran.
+- Les jaquettes gardées plafonnent à 500 Mo (`COVERS_CACHE_MAX_MB`), les plus anciennes partent ;
+  une jaquette n'attend plus son tour que 6 s, pour ne pas retenir les autres requêtes de la page.
+- Sept réglages documentés dans `.env.example` n'arrivaient pas à l'API (aucun compose ne les
+  passait) ; les compose du NAS perdaient aussi le choix du modèle Gemini. Les trois compose les
+  passent, avec les valeurs par défaut de l'API.
+- La restauration renvoyait à « Emporter ma collection », libellé disparu : elle nomme Profil ▸ Mes
+  données ▸ Télécharger en JSON. `EXPLOITATION.md` corrigé de même, et explique le dossier des
+  jaquettes.
+
+Vérifié : 1 616 tests backend, 768 tests web, typecheck, lint ; `docker compose config` sur les trois
+fichiers ; l'API reconstruite voit les six réglages ; 34 contrôles de déploiement.

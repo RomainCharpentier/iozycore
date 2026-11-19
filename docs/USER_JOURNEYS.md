@@ -542,15 +542,17 @@ libre.
 
 ### 32. Scanner un code-barres à la caméra
 **Point de départ** : barre du pouce ▸ Scan, ou Rechercher ▸ Scanner
-**Préconditions** : navigateur exposant `BarcodeDetector` (Chrome/Edge desktop
-et Android) **et** autorisation caméra.
-**Étapes** : Démarrer le scan → présenter le code-barres.
-**Branches** : navigateur non supporté (Safari, Firefox) → message explicite et
-**repli sur la saisie manuelle présente sur le même écran** ; caméra refusée →
-message d'erreur.
-**Écrans** : `ScanPage`, `CameraBarcodeScanner`
-**Statut** : `COMPLET` (mécanique caméra non exerçable dans l'environnement
-d'audit — aucune caméra, `BarcodeDetector` absent).
+**Préconditions** : une caméra et son autorisation. Le lecteur est celui du
+navigateur (`BarcodeDetector`, Chrome/Edge, Android) ou, sur Safari (iPhone) et
+Firefox, celui de l'app, chargé au démarrage du scan (lot 241).
+**Étapes** : Démarrer le scan (« Préparation du lecteur… » le temps de charger le
+lecteur de l'app) → présenter le code-barres.
+**Branches** : lecteur de l'app en service → l'écran le dit ; lecteur
+impossible à charger → message, et la saisie manuelle du même écran ; pas
+d'accès caméra → message et saisie manuelle ; caméra refusée → message d'erreur.
+**Écrans** : `ScanPage`, `CameraBarcodeScanner`, `barcodeDetector`
+**Statut** : `COMPLET` (lecteur de l'app vérifié avec une fausse caméra ; pas
+essayé sur un vrai iPhone).
 
 ### 33. Saisir un code-barres à la main sur l'écran de scan
 **Étapes** : saisir l'ISBN → Chercher.
@@ -954,70 +956,35 @@ Suppression idempotente.
 
 ---
 
-## 7. Parcours — Découvrir
+## 7. Parcours — Sorties, suivre, sans réseau
 
-> **Retiré au lot 222.** Ces parcours décrivent l'écran tel qu'il était ; leur
-> contenu vit désormais sur le mur (séries à compléter, idées), sur À acheter
-> (analyse d'annonce), sur Sorties et sur Partager (bilan en image).
+> **Découvrir a été retiré au lot 222.** Ses parcours vivent ailleurs :
+>
+> | Ancien parcours | Où il vit aujourd'hui |
+> |---|---|
+> | 42 Parcourir Découvrir | Le mur de l'accueil (`/`) : tuiles de couleur sur ce qui bouge, idées « pour toi » |
+> | 43 Ouvrir les opportunités | Le mur (la série la plus proche d'être complète) et À acheter (`/to-buy`, lignes « à compléter » avec leur coût, lot 223) |
+> | 44 bis Découvertes par univers | Remplacé par les idées « pour toi » du mur (recommandations confirmées par une source). La route `GET /insights/discover` n'a plus d'écran (voir §17) |
+> | Analyser une annonce | À acheter ▸ « Analyser une annonce » (`/to-buy/analyse`) |
+> | Bilan annuel | Partager (`/share`), bilan en image |
+> | Tier Lists | Profil ▸ Tier Lists |
 
-### 42. Parcourir Découvrir
-**Résultat** : quatre panneaux — Tier Lists, Opportunités, **Découvertes**
-(lot 142 : les découvertes par univers ont quitté Statistiques, où rien ne
-les laissait chercher, pour l'écran qui porte leur nom) et **Sorties**
-(lot 146 : « Prochaines sorties » revient, avec des données cette fois — voir
-44). En tête, la carte-lien « Analyser une annonce » (lot 137).
-**Desktop** Tier Lists et Opportunités côte à côte au-delà de 1100 px, puis
-Découvertes et Sorties en pleine largeur ; **Mobile** un onglet à la fois.
-**Nature** : c'est un **hub d'aperçus**, pas une page interactive — chaque
-panneau montre un résumé et renvoie vers l'écran dédié. C'est l'écran du
-cœur : les Tier Lists valent pour tout univers, les opportunités viennent de
-ce qui a une progression, les découvertes de chaque univers qui sait en
-proposer (`hasDiscoverySource` sur le type).
-**Écrans** : `DiscoverPage`, `DiscoverTierPreview`, `DiscoverOpportunitiesPreview`, `DiscoverySection`, `DiscoverReleasesPreview`
-**Statut** : `COMPLET`
-
-### 43. Ouvrir les opportunités
-**Étapes** : panneau Opportunités → une série, ou « Tout voir » → `/suggestions`.
-**Résultat** : séries dont il ne manque que quelques tomes, avec le nombre de
-tomes manquants et le coût estimé pour compléter quand un prix est connu.
-**Données** : **réelles**, calculées par le moteur de complétude — rien de
-codé en dur.
-**Statut** : `COMPLET`
-
-### 44. Consulter le calendrier des sorties
-**Point de départ** : Découvrir ▸ panneau **Sorties** — les trois premières
-sorties des trois mois à venir, datées — puis « Tout voir » → `/releases`, le
-calendrier complet, mois par mois (`?mois=AAAA-MM`, « Mois précédent »,
-« Mois suivant », « Aujourd'hui »).
-**Résultat** : les sorties des œuvres **suivies**, et d'elles seules - suivre
-est le troisième état d'une œuvre, avec possédée et voulue, un seul à la fois
-(voir 45). Le mois en **grille**, lundi en tête - chaque jour à sa place,
-aujourd'hui marqué, les jaquettes de ce qui sort dans la case du jour - puis
-l'**agenda** du mois dessous, rangé par jour ; toucher une case ne garde que ce
-jour (« Tout le mois » ramène). Une rangée de puces filtre par catégorie quand
-il y en a plusieurs. Chaque ligne dit ce qui sort (« Tome 72 · Kana », ou la
-catégorie) et ce que ça représente pour la collection : **À acheter**, ou
-simplement **Possédé** (**Envie** ne subsiste que sur un tome voulu d'une série
-suivie). Une ligne mène à la fiche ; la source de
-la date, elle, ne s'y écrit pas. À droite de la grille sur desktop (dessous en
-mobile), **À venir** liste tout ce qui sort dans l'année, mois par mois, dans
-l'ordre du calendrier ; choisir une ligne amène la grille sur son jour.
-**Données** : **réelles**, et jamais approximatives. Les tomes datés par Google
-Books (le résultat de la recherche de tomes, relu chaque nuit pour les séries
-en cours), les jeux datés par IGDB (Europe d'abord), et la **date saisie sur la
-fiche** d'une œuvre, pour n'importe quelle catégorie — c'est ce qui met les
-jeux de société et les catégories personnalisées dans le même calendrier
-(BoardGameGeek ne donne que l'année). Une date connue au mois près se lit
-« Dans le mois, date à préciser » ; une année seule ne se lit pas du tout.
-**Branches** : un mois sans rien garde sa grille et le dit en une ligne, avec
-où se saisit une date ; une catégorie choisie qui n'a plus rien retombe sur
-« Tout », un jour choisi qui n'a plus rien sur le mois entier.
-**Historique** : retiré du produit au lot 142 (2026-09-06) — le panneau
-annonçait qu'aucune source n'existait, et un panneau qui n'a rien à dire n'est
-pas une promesse, c'est une case. Revenu au lot 146 avec les données.
-**Écrans** : `ReleasesPage`, `DiscoverReleasesPreview`, `ReleaseRow`
-**Backend** : `GET /insights/releases?from=…&to=…`, `hasReleaseSource` sur
-`GET /entity-types`
+### 44. Consulter les sorties
+**Point de départ** : barre ▸ **Sorties** (`/releases`).
+**Résultat** : une frise autour d'aujourd'hui (lots 215 et 221). À gauche, ce
+qui est entré récemment dans la collection ; au milieu, le trait
+« Aujourd'hui » ; à droite, ce qui sort dans l'année, la prochaine sortie en
+grand, avec le nombre de jours. Une sortie qui manque à la collection est
+détourée : la toucher dit « je l'ai précommandé ». Des puces filtrent par
+catégorie quand il y en a plusieurs. La molette fait défiler la frise.
+« S'abonner dans mon agenda » donne un flux `.ics`.
+**Branches** : sources jamais lues → l'état vide porte le seul bouton
+« Chercher les sorties » (lot 238) ; une année sans rien le dit et explique
+comment voir des sorties ; une visite lit sans bouton.
+**Données** : réelles et jamais approximatives (Google Books, IGDB, date saisie
+sur la fiche) ; une date au mois près se lit « date à préciser ».
+**Écrans** : `ReleasesPage`, `AbonnementAgenda`, `ReleaseRefreshLine`
+**Backend** : `GET /insights/releases?from=…&to=…`, `GET /public/calendar/{token}.ics`
 **Statut** : `COMPLET`
 
 ### 45. Suivre une œuvre
@@ -1071,7 +1038,28 @@ comptés, à ajouter depuis le Catalogue.
 **Statut** : `COMPLET` (vérifié en direct avec le vrai moteur sur une étagère
 synthétique ; la caméra du téléphone n'est pas exerçable ici).
 
-### 44 bis. Découvrir ce que chaque univers propose
+### 45 ter. Vérifier sans réseau avant un achat
+**Point de départ** : l'app installée, sans réseau (pas de signal en boutique,
+mode avion) ou avec le serveur injoignable (NAS endormi). Rien à faire : l'écran
+s'ouvre seul, à l'ouverture comme quand le réseau tombe app ouverte (lot 240).
+**Préconditions** : être entré au moins une fois avec son compte sur cet
+appareil (la copie se fait à chaque ouverture).
+**Étapes** : taper un titre (sans accents ni ordre des mots imposés).
+**Résultat** : « Ta collection, sans réseau », la date de la copie, et pour
+chaque œuvre trouvée « Tu as : 1 à 5, 7, 8 · il te manque : 6 », « Tu l'as » ou
+« Dans tes envies ». Rien de trouvé : « Pas dans ta collection ni tes envies,
+d'après cette copie. »
+**Branches** : « Réessayer » rejoint le serveur ; le réseau revenu rend l'app.
+Pas de copie (jamais connecté, ou déconnecté depuis) → le simple message
+d'erreur avec « Réessayer ».
+**Écrans** : `OfflinePocket` (dans la porte, `App.tsx`)
+**Backend** : `GET /works/pocket` (lu en ligne, gardé dans `localStorage`)
+**Statut** : `COMPLET` (vérifié avec le build de production, réseau coupé)
+
+### 44 bis. ~~Découvrir ce que chaque univers propose~~ — retiré au lot 222 (voir le tableau en tête du chapitre)
+
+<!-- L'ancienne description suit, pour l'historique. -->
+
 **Point de départ** : Découvrir ▸ panneau Découvertes ▸ « Voir des
 suggestions » (à la demande : chaque univers interroge une source externe).
 **Résultat** : par catégorie qui a une source, une liste de suggestions avec
@@ -1643,50 +1631,46 @@ Vérifié en confrontant l'OpenAPI de l'application (`/v3/api-docs`) à l'intég
 | `GET /wishlist/lookup` | Vérifier avant achat si une œuvre est possédée ou déjà en envies | Couvert autrement par le bloc « Déjà dans IozyCore », qui distingue désormais possédé et seulement catalogué |
 | `GET /purchase-analysis/editions/search` | Lister toutes les éditions d'une série | Couvert par l'écran Éditions de référence |
 | `GET /entities?entityTypeId=` | Lister les œuvres d'un type | Remplacé par `/entities/search` |
+| `GET /insights/discover?entityTypeCode=` | Des suggestions par univers, avec leur raison | Son écran (Découvrir) est parti au lot 222 ; les idées « pour toi » du mur l'ont remplacé. Le client web a été retiré le 2026-11-19 |
 
 ---
 
 ## 18. Carte globale des parcours
 
+État du 2026-11-19 : la barre compte cinq destinations (lots 207 à 224). Les
+numéros renvoient aux parcours ci-dessus ; certains ont changé d'écran depuis
+leur description.
+
 ```text
 IozyCore
 │
-├── Ma collection  (/)                                     [mobile : OK]
-│   ├── 01 Consulter · 02 Filtrer · 03 Ouvrir un rayon
-│   ├── 04 Retrouver les jaquettes · 05 Valeur · 06 Import BGG
-│   └── 07 Ouvrir une oeuvre
-│       └── Fiche (/entity/:id)
-│           ├── 08 Progression · 09 Changer d'édition
-│           ├── 10 Édition de référence
-│           ├── 12 Parcourir les tomes · 13 Ajouter un tome · 14 Ajouter à la main
-│           ├── 15 Prix/note · 17 Vendu/perdu · 18 Supprimer un exemplaire
-│           ├── 19 Jaquette · 20 Numéro de tome
-│           ├── 21 Classer · 22 Assistant · 23-24 Informations · 25 Tags/expériences/relations
-│           └── 26 Supprimer la fiche
+├── Accueil  (/)                     le mur : ce qui bouge, idées « pour toi »
 │
-├── Rechercher  (/add)                                     [mobile : OK]
-│   ├── 27 Recherche titre · 28 Déjà possédé · 29 Code-barres
-│   ├── 30 Ajouter depuis un résultat · 31 Ajouter à la main
-│   ├── Scan (/scan)                  → 32 caméra · 33 saisie · 34 menu contextuel
-│   └── Analyse (/purchase-analysis)  → 35 analyser · 36 édition inconnue · 37 IA
-│                                       38 relever un prix · 39 offre · 40 wishlist
-│                                       41 historique
+├── Collection  (/collection)        → 01 Consulter · 02 Filtrer · 03 Rayon (/collection/:type)
+│   ├── 04 Jaquettes · 05 Valeur · 06 Import BGG
+│   └── 07 Ouvrir une œuvre → Fiche (/entity/:id)
+│       ├── 08 Progression · 09 Édition · 10 Édition de référence
+│       ├── 12 Tomes · 13 Ajouter un tome · 14 À la main · 17 Vendu/perdu · 18 Supprimer
+│       ├── 19 Jaquette · 21 Classer · 22 Assistant · 23-24 Informations · 25 Tags…
+│       └── 26 Supprimer la fiche · 45 Suivre
 │
-├── Découvrir  (/discover)                                 [mobile : OK]
-│   ├── 42 Hub d'aperçus · 43 Opportunités · 44 bis Découvertes par univers (44 Sorties retiré)
-│   └── Tier Lists (/tier-lists) → 45 écran · 46 créer · 47 classer
-│                                  48 classement rapide · 49 gérer · 50 partager
+├── Sorties  (/releases)             → 44 Frise · agenda
 │
-├── Envies  (/wishlist)                                    [mobile : OK]
-│   └── 51 Consulter/retirer · 52 Ajouter (1 seul point d'entrée) · 53 Partager
+├── À acheter  (/to-buy)             manques, budget, coût pour finir une série
+│   └── Analyse (/to-buy/analyse)    → 35 à 41
 │
-├── Profil  (/profile)                                     [mobile : OK]
-│   ├── 54 Profil · 55 Partager la collection · 56 Bilan annuel
-│   ├── 57 Langue des titres · 60 Export (réglages sur la page, lot 140)
-│   └── Administration (/administration)                   [mobile : OK]
-│       └── 58 Types (aussi via Ma collection) · 59 Éditions
+├── Partager  (/share)               → 53 Partager son espace · 56 Bilan en image
 │
-└── Pages publiques (hors AppShell)   → 61 collection partagée · 62 envies partagées
+├── Chercher  (/add, Catalogue)      → 27 à 31
+│   ├── Scan (/scan)                 → 32 caméra (iPhone compris) · 33 saisie · 34 menu
+│   └── Photo (/import-photo)        → 45 bis
+│
+├── Profil  (/profile)               → 54 · 57 · 60 Export · Tier Lists (45 à 50)
+│   └── Administration               → 58 Types · 59 Éditions · comptes
+│
+├── Sans réseau (porte de l'app)     → 45 ter Vérifier avant un achat
+│
+└── Pages publiques (hors coquille)  → 61 collection partagée · 62 envies partagées
 ```
 
 ---
@@ -1736,10 +1720,11 @@ IozyCore
 | 39 | Préparer une offre à envoyer | Analyse d'achat | COMPLET | oui | oui |
 | 40 | Ajouter les séries d'un lot à la wishlist | Analyse d'achat | COMPLET | oui | oui |
 | 41 | Consulter et rouvrir une analyse passée | Analyse d'achat | COMPLET | oui | oui |
-| 42 | Parcourir Découvrir | Découvrir | COMPLET | 3 colonnes | Onglets |
-| 43 | Ouvrir les opportunités | Découvrir | COMPLET | oui | oui |
-| 44 | ~~Consulter les prochaines sorties~~ (retiré, lot 142) | Découvrir | — | — | — |
-| 44 bis | Découvrir ce que chaque univers propose | Découvrir | COMPLET | oui | oui |
+| 42 | ~~Parcourir Découvrir~~ (retiré, lot 222 : le mur) | — | — | — | — |
+| 43 | ~~Ouvrir les opportunités~~ (retiré, lot 222 : mur et À acheter) | — | — | — | — |
+| 44 | Consulter les sorties (frise) | Sorties | COMPLET | oui | oui |
+| 44 bis | ~~Découvrir ce que chaque univers propose~~ (retiré, lot 222) | — | — | — | — |
+| 45 ter | Vérifier sans réseau avant un achat | Porte de l'app | COMPLET | oui | oui |
 | 45 | Ouvrir l'écran Tier Lists | Tier Lists | COMPLET | oui | oui |
 | 46 | Créer une Tier List personnalisée | Tier Lists | COMPLET | oui | oui |
 | 47 | Classer une œuvre depuis un board | Tier Lists | COMPLET | Clic + glisser-déposer | Clic seul |

@@ -15,18 +15,23 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * The covers served from this origin, each one fetched from its host ONCE.
@@ -40,7 +45,8 @@ import java.util.function.Function;
  * <h2>How</h2>
  * <ul>
  *   <li>A cover read once is kept on disk (the media volume): a cover never
- *       changes at the same address, so it never expires.</li>
+ *       changes at the same address, so it never expires. The folder has a
+ *       ceiling (500 MB by default): past it, the oldest covers go.</li>
  *   <li>Calls to one host go two at a time, and at least {@code spacing}
  *       apart for the BnF: the first visit of a long series fills slowly
  *       instead of getting the address blocked.</li>
@@ -57,7 +63,9 @@ import java.util.function.Function;
 public class CoverImageStore {
 
     static final String BNF_HOST = "catalogue.bnf.fr";
-    private static final Duration WAIT_FOR_A_TURN = Duration.ofSeconds(20);
+    // A waiting cover holds a browser connection to the app (six per origin over
+    // HTTP/1.1): past a few seconds it would hold back the data of the page too.
+    private static final Duration WAIT_FOR_A_TURN = Duration.ofSeconds(6);
     private static final Map<String, String> EXTENSIONS = Map.of(
             "image/jpeg", "jpg", "image/png", "png", "image/webp", "webp", "image/gif", "gif");
 
@@ -72,14 +80,22 @@ public class CoverImageStore {
     private final Map<String, Instant> nextCall = new ConcurrentHashMap<>();
     private final Map<String, Instant> silentUntil = new ConcurrentHashMap<>();
     private final TtlCache<String, Boolean> missing = new TtlCache<>(Duration.ofDays(1), 5_000);
+    /** The most the kept covers may weigh; past it, the oldest go (they are read again when asked). */
+    private final long maxBytes;
+    /** What the kept covers weigh, measured on the first write; -1 until then. */
+    private final AtomicLong usedBytes = new AtomicLong(-1);
 
     @Autowired
     public CoverImageStore(CoverImageReader reader,
-                           @Value("${iozycore.covers.cache-dir:/app/media/covers}") String folder) {
-        this(reader::fetch, Path.of(folder), Clock.systemUTC(), Duration.ofMillis(400), Duration.ofMinutes(5));
+                           @Value("${iozycore.covers.cache-dir:/app/media/covers}") String folder,
+                           @Value("${iozycore.covers.cache-max-mb:500}") long maxMegabytes) {
+        this(reader::fetch, Path.of(folder), Clock.systemUTC(), Duration.ofMillis(400), Duration.ofMinutes(5),
+                maxMegabytes * 1024 * 1024);
     }
 
-    CoverImageStore(Function<URI, Fetch> fetcher, Path folder, Clock clock, Duration bnfSpacing, Duration hostCooldown) {
+    CoverImageStore(Function<URI, Fetch> fetcher, Path folder, Clock clock, Duration bnfSpacing, Duration hostCooldown,
+                    long maxBytes) {
+        this.maxBytes = maxBytes;
         this.fetcher = fetcher;
         this.folder = folder;
         this.activeFolder = folder;
@@ -181,6 +197,7 @@ public class CoverImageStore {
         }
         try {
             write(target, key + "." + extension, image.bytes());
+            keepUnderLimit(target, image.bytes().length);
         } catch (IOException | UnsupportedOperationException e) {
             Path fallback = Path.of(System.getProperty("java.io.tmpdir"), "iozycore-covers");
             if (!target.equals(folder) || fallback.equals(folder)) {
@@ -192,6 +209,63 @@ public class CoverImageStore {
                     folder, e.getMessage(), fallback);
             activeFolder = fallback;
             toDisk(key, image);
+        }
+    }
+
+    /** Past the limit, the oldest covers go until the folder is back under 80 % of it. */
+    private void keepUnderLimit(Path target, long added) throws IOException {
+        if (usedBytes.get() < 0) {
+            usedBytes.compareAndSet(-1, sizeOf(kept(target)));
+        } else {
+            usedBytes.addAndGet(added);
+        }
+        if (usedBytes.get() <= maxBytes) {
+            return;
+        }
+        synchronized (this) {
+            List<Path> oldestFirst = kept(target).stream()
+                    .sorted(Comparator.comparing(CoverImageStore::modified)).toList();
+            long used = sizeOf(oldestFirst);
+            int removed = 0;
+            for (Path file : oldestFirst) {
+                if (used <= maxBytes * 8 / 10) {
+                    break;
+                }
+                long size = Files.size(file);
+                Files.deleteIfExists(file);
+                used -= size;
+                removed++;
+            }
+            usedBytes.set(used);
+            log.info("Kept covers over {} MB: {} oldest removed", maxBytes / 1024 / 1024, removed);
+        }
+    }
+
+    private static List<Path> kept(Path target) throws IOException {
+        try (Stream<Path> files = Files.list(target)) {
+            return files.filter(f -> EXTENSIONS.containsValue(extensionOf(f))).toList();
+        }
+    }
+
+    private static String extensionOf(Path file) {
+        String name = file.getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? "" : name.substring(dot + 1);
+    }
+
+    private static long sizeOf(List<Path> files) throws IOException {
+        long total = 0;
+        for (Path file : files) {
+            total += Files.size(file);
+        }
+        return total;
+    }
+
+    private static FileTime modified(Path file) {
+        try {
+            return Files.getLastModifiedTime(file);
+        } catch (IOException e) {
+            return FileTime.fromMillis(0);
         }
     }
 
