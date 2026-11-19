@@ -11,7 +11,7 @@ import {
 } from '@/common/api/auth'
 import { ApiError, EVENEMENT_SESSION_PERDUE, declarerVisiteEnCours } from '@/common/api/client'
 import { retournerApresConnexion } from '@/common/lib/retourApresConnexion'
-import { effacerPoche } from '@/common/lib/poche'
+import { clearPocketCopy } from '@/common/lib/pocketCopy'
 import { queryKeys } from '@/common/lib/queryKeys'
 
 /**
@@ -79,7 +79,7 @@ export function useAuth() {
   /** After an account change, nothing in the cache concerns it anymore. */
   function repartirDeZero(nouveau: Compte | null) {
     // The pocket copy belongs to the account that left: never show it to the next one.
-    effacerPoche()
+    clearPocketCopy()
     queryClient.setQueryData(queryKeys.auth.compte, nouveau)
     queryClient.clear()
     queryClient.setQueryData(queryKeys.auth.compte, nouveau)

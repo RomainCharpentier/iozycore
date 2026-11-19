@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { PocketWorkDto } from '@/common/types/api'
-import { PocheHorsLigne } from './PocheHorsLigne'
+import { OfflinePocket } from './OfflinePocket'
 
 const ONE_PIECE: PocketWorkDto = {
   entityId: 'op',
@@ -17,8 +17,8 @@ const ONE_PIECE: PocketWorkDto = {
 
 function rendre() {
   render(
-    <PocheHorsLigne
-      poche={{ savedAt: '2026-11-19T11:10:00.000Z', works: [ONE_PIECE] }}
+    <OfflinePocket
+      copy={{ savedAt: '2026-11-19T11:10:00.000Z', works: [ONE_PIECE] }}
       message="Le serveur ne répond pas."
       onRetry={vi.fn()}
       retrying={false}
@@ -26,7 +26,7 @@ function rendre() {
   )
 }
 
-describe('PocheHorsLigne', () => {
+describe('OfflinePocket', () => {
   it('says it is a copy, with its date, and what it does not hold', () => {
     rendre()
     expect(screen.getByText('Le serveur ne répond pas.')).toBeInTheDocument()

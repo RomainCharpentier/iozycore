@@ -73,7 +73,7 @@ public class CoverImageReader {
 
     /**
      * The host answered, without a usable image (404, HTML, too big): asking again gives the same.
-     * A 500 is one of them: it is how the BnF says it has no cover for an address.
+     * A 500 of the BnF is one of them: it is how the BnF says it has no cover for an address.
      */
     public record Missing() implements Fetch {
     }
@@ -99,6 +99,11 @@ public class CoverImageReader {
             try (InputStream body = response.body()) {
                 String type = response.headers().firstValue("Content-Type").orElse("")
                         .split(";")[0].trim().toLowerCase(Locale.ROOT);
+                // The BnF says "no cover" with a 500; any other 5xx is a host in trouble, not an answer.
+                boolean bnfNoCover = response.statusCode() == 500 && CoverImageStore.BNF_HOST.equals(uri.getHost());
+                if (response.statusCode() >= 500 && !bnfNoCover) {
+                    return new Unreachable();
+                }
                 if (response.statusCode() != 200 || !IMAGE_TYPES.contains(type)) {
                     return new Missing();
                 }

@@ -41,6 +41,8 @@ const base = adresse.replace(/\/+$/, '')
 const app = (process.env.IOZYCORE_BASE_PATH ?? '/core').replace(/\/+$/, '')
 const problemes = []
 const reussites = []
+/** Not a pass and not a failure: something the reader must see (IozyTest absent). */
+const warnings = []
 
 function verifier(condition, message, detail) {
   if (condition) reussites.push(message)
@@ -208,9 +210,11 @@ try {
     const page = await blindtest.text()
     verifier(
       page.includes('IozyTest n’est pas lancé'),
-      'IozyTest is not running, and /test/ says so in French',
+      'without IozyTest, /test/ says so in French',
       `received 503 without the page: ${page.slice(0, 80)}`,
     )
+    // Normal on a local stack without the clone; an outage on the NAS. Said either way.
+    warnings.push('IozyTest is not running: /test/api/health was not checked')
   } else {
     verifier(blindtest.status === 200, '/test/api/health answers 200', `received ${blindtest.status}`)
   }
@@ -278,10 +282,11 @@ if (base.startsWith('https://')) {
 
 console.log(`Checking ${base}`)
 for (const reussite of reussites) console.log(`  ok   ${reussite}`)
+for (const warning of warnings) console.log(`  WARN ${warning}`)
 for (const probleme of problemes) console.error(`  KO   ${probleme}`)
 
 if (problemes.length > 0) {
   console.error(`\n${problemes.length} problem(s) out of ${problemes.length + reussites.length} checks.`)
   process.exit(1)
 }
-console.log(`\n${reussites.length} checks, no problem.`)
+console.log(`\n${reussites.length} checks, no problem${warnings.length ? `, ${warnings.length} warning(s)` : ''}.`)

@@ -70,12 +70,12 @@ export function ReleasesPage() {
   const typesQuery = useQuery({ queryKey: queryKeys.entityTypes.all, queryFn: listEntityTypes })
   const oeuvresQuery = useQuery({ queryKey: queryKeys.works.list, queryFn: listWorks, enabled: !estInvite })
   const typesParId = useMemo(() => new Map((typesQuery.data ?? []).map((t) => [t.id, t])), [typesQuery.data])
-  const { status: etatMiseAJour, launch: lancerMiseAJour } = useReleaseRefresh()
+  const { status: etatMiseAJour, launch: startRefresh } = useReleaseRefresh()
   const jamaisConsultees = !!etatMiseAJour?.available && !etatMiseAJour.lastRun
 
   const toutes = calendrierQuery.data?.entries ?? []
   // Nothing listed and the sources never read: the empty state carries the one button.
-  const premiereRecherche =
+  const firstSearch =
     calendrierQuery.isSuccess && toutes.length === 0 && jamaisConsultees && !estInvite && !etatMiseAJour?.running
   const comptes = compterParCategorie(toutes)
   // A chosen category that no longer has a release falls back on "Tout": a
@@ -126,7 +126,7 @@ export function ReleasesPage() {
       {calendrierQuery.isError && <ErrorBanner message={calendrierQuery.error.message} />}
       {calendrierQuery.isLoading && <Squelette lignes={4} />}
       {jeLAi.isError && <ErrorBanner message={jeLAi.error.message} />}
-      {premiereRecherche && lancerMiseAJour.isError && <ErrorBanner message={lancerMiseAJour.error.message} />}
+      {firstSearch && startRefresh.isError && <ErrorBanner message={startRefresh.error.message} />}
 
       {calendrierQuery.isSuccess && toutes.length === 0 && (
         <EtatVide
@@ -142,11 +142,11 @@ export function ReleasesPage() {
                 : 'Ajoute une œuvre à ta collection ou à tes envies, ou suis-la depuis sa fiche, pour voir ses sorties ici.'
           }
           action={
-            premiereRecherche ? (
+            firstSearch ? (
               <button
                 type="button"
-                onClick={() => lancerMiseAJour.mutate()}
-                disabled={lancerMiseAJour.isPending}
+                onClick={() => startRefresh.mutate()}
+                disabled={startRefresh.isPending}
                 className="btn-primaire"
               >
                 Chercher les sorties
@@ -229,7 +229,7 @@ export function ReleasesPage() {
       <div className="flex flex-col gap-4">
         {!estInvite && <AbonnementAgenda />}
         {/* The empty state already asks for the first search: the line would say it twice. */}
-        {!premiereRecherche && <ReleaseRefreshLine />}
+        {!firstSearch && <ReleaseRefreshLine />}
       </div>
     </div>
   )

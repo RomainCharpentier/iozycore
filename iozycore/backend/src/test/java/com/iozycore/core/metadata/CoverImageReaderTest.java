@@ -35,9 +35,9 @@ class CoverImageReaderTest {
         assertThat(CoverImageReader.allowedCoverUri(url)).isEmpty();
     }
 
-    /** The BnF answers 500 when it has no cover: that is an answer, not a host that went silent. */
+    /** A 5xx of a CDN is a host in trouble; a closed port is a host that does not answer. */
     @Test
-    void a_500_is_a_missing_cover_and_a_closed_port_is_an_unreachable_host() throws Exception {
+    void a_500_off_the_bnf_and_a_closed_port_are_unreachable() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
             exchange.sendResponseHeaders(500, -1);
@@ -47,8 +47,9 @@ class CoverImageReaderTest {
         int port = server.getAddress().getPort();
         try {
             CoverImageReader reader = new CoverImageReader();
+            // Not the BnF host: a 500 is a host in trouble. (The BnF case is the host name, see fetch.)
             assertThat(reader.fetch(URI.create("http://127.0.0.1:" + port + "/couverture")))
-                    .isInstanceOf(CoverImageReader.Missing.class);
+                    .isInstanceOf(CoverImageReader.Unreachable.class);
         } finally {
             server.stop(0);
         }

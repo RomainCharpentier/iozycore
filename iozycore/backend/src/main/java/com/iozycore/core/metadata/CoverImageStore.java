@@ -105,7 +105,9 @@ public class CoverImageStore {
         }
         if (fetch instanceof Missing) {
             missing.put(key, true);
-        } else if (fetch != null) {
+        } else if (fetch != null && BNF_HOST.equals(uri.getHost())) {
+            // Only the BnF blocks an address after a burst: a CDN that times out once
+            // is not silenced for every other cover it holds.
             silentUntil.put(uri.getHost(), clock.instant().plus(hostCooldown));
             log.warn("Cover host {} does not answer: left alone for {}", uri.getHost(), hostCooldown);
         }

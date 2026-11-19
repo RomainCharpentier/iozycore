@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Search, WifiOff } from 'lucide-react'
-import { chercherDansLaPoche, phraseDeLaPoche, type Poche } from '@/common/lib/poche'
+import { searchPocketCopy, pocketLine, type PocketCopy } from '@/common/lib/pocketCopy'
 
 const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 
@@ -11,20 +11,20 @@ const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', h
  * It reads the pocket copy kept on the device, and says it is a copy, with its
  * date: what was added since is not in it. Nothing is written from here.
  */
-export function PocheHorsLigne({
-  poche,
+export function OfflinePocket({
+  copy,
   message,
   onRetry,
   retrying,
 }: {
-  poche: Poche
+  copy: PocketCopy
   message: string
   onRetry: () => void
   retrying: boolean
 }) {
-  const [requete, setRequete] = useState('')
-  const trouvees = useMemo(() => chercherDansLaPoche(poche.works, requete), [poche.works, requete])
-  const cherche = requete.trim().length > 0
+  const [query, setQuery] = useState('')
+  const found = useMemo(() => searchPocketCopy(copy.works, query), [copy.works, query])
+  const searching = query.trim().length > 0
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[760px] flex-col gap-6 px-4 py-10">
@@ -45,7 +45,7 @@ export function PocheHorsLigne({
           Ta collection, sans réseau
         </h1>
         <p className="mt-3 text-[15px] text-textDim">
-          Copie du {DATE.format(new Date(poche.savedAt))}, {poche.works.length} œuvre{poche.works.length > 1 ? 's' : ''}. Ce que tu as ajouté depuis
+          Copie du {DATE.format(new Date(copy.savedAt))}, {copy.works.length} œuvre{copy.works.length > 1 ? 's' : ''}. Ce que tu as ajouté depuis
           n’y est pas.
         </p>
       </header>
@@ -55,24 +55,24 @@ export function PocheHorsLigne({
         <Search size={18} aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-textDim" />
         <input
           type="search"
-          value={requete}
-          onChange={(e) => setRequete(e.target.value)}
-          placeholder="Un titre…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Un title…"
           autoFocus
           className="champ w-full pl-11"
         />
       </label>
 
-      {cherche && trouvees.length === 0 && (
+      {searching && found.length === 0 && (
         <p className="text-[15px] text-textPrimary">Pas dans ta collection ni tes envies, d’après cette copie.</p>
       )}
 
-      {trouvees.length > 0 && (
+      {found.length > 0 && (
         <ul aria-label="Dans la copie" className="flex flex-col">
-          {trouvees.slice(0, 40).map((w) => (
+          {found.slice(0, 40).map((w) => (
             <li key={w.entityId} className="border-t border-line py-3">
               <p className="font-display text-lg font-bold text-textPrimary">{w.title}</p>
-              <p className="text-[15px] text-textDim">{phraseDeLaPoche(w)}</p>
+              <p className="text-[15px] text-textDim">{pocketLine(w)}</p>
             </li>
           ))}
         </ul>

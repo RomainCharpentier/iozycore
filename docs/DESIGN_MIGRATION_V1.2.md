@@ -2248,7 +2248,8 @@ Vérifié : 0 débordement sur les 25 écrans après correction, 28 parcours e2e
 Depuis qu'IozyTest a son dépôt, `docker compose up` échouait sans clone voisin et ne lançait rien.
 IozyTest passe derrière le profil `iozytest` (`docker compose --profile iozytest up --build`). Sans
 lui, `/test/` répond par une courte page en français (503, « IozyTest n'est pas lancé ») au lieu
-d'un 502 brut, et `check:deploiement` accepte cette page.
+d'un 502 brut ; `check:deploiement` vérifie cette page et l'annonce en avertissement (normal en local,
+une panne sur le NAS).
 
 Vérifié : pile reconstruite sans le clone, 34 contrôles de déploiement sur :8081.
 
@@ -2272,7 +2273,8 @@ des dizaines de jaquettes d'un coup, à chaque visite. Les jaquettes BnF passent
 `/api/covers/image` : le serveur garde chacune sur le volume média après la première lecture,
 appelle un hôte deux fois à la fois (la BnF à 400 ms d'écart au moins), laisse tranquille un hôte
 muet cinq minutes, et retient une jaquette absente un jour. Un 500 de la BnF veut dire « pas de
-jaquette », pas une panne. Sans session (page publique), le web retombe sur l'adresse directe.
+jaquette », pas une panne. La page publique, sans session, charge la BnF en direct ; ailleurs, un refus du serveur montre le
+repli, jamais un chargement direct (ce serait la rafale qu'on évite). Seule la BnF est mise au repos.
 L'image crée `/app/media` pour son utilisateur : un volume neuf est inscriptible.
 
 Vérifié : 1 612 tests backend, tests du magasin et du lecteur ; en direct, une jaquette gardée
@@ -2286,7 +2288,8 @@ poche de la collection sur l'appareil (`GET /api/works/pocket` : chaque œuvre p
 avec les numéros possédés et manquants), relue à chaque ouverture et après chaque ajout. Quand le
 serveur ne répond pas, la porte ouvre « Ta collection, sans réseau » : une recherche dans la copie,
 qui dit sa date et que les ajouts suivants n'y sont pas (« Tu as : 1 à 5, 7, 8 · il te manque : 6 »).
-La copie s'efface à chaque connexion, visite et déconnexion. Rien ne s'écrit depuis cet écran.
+Le même écran s'ouvre quand l'appareil perd le réseau alors que l'app était ouverte. La copie
+s'efface à chaque connexion, visite et déconnexion. Rien ne s'écrit depuis cet écran.
 
 Vérifié : test de contrat (possédés 2, 4 ; manquants 1, 3), 764 tests web ; build de production
 avec service worker dans Chromium à 390 px, réseau coupé : la copie répond pour One Piece.

@@ -6,12 +6,14 @@ import { HomePage } from '@/pages/home/HomePage'
 import { AuthPage } from '@/pages/auth/AuthPage'
 import { ErrorBanner } from '@/common/components/ErrorBanner'
 import { useAuth } from '@/common/hooks/useAuth'
+import { useOnline } from '@/common/hooks/useOnline'
 import { estReserveeAuxComptes } from '@/common/lib/accesInvite'
 import { useDocumentTitleFromHeading } from '@/common/hooks/useDocumentTitle'
 import { useScrollToTopOnNavigation } from '@/common/hooks/useScrollToTop'
 import { definirPreferencesCollection } from '@/common/lib/preferencesCollection'
-import { lirePoche } from '@/common/lib/poche'
-import { PocheHorsLigne } from '@/pages/hors-ligne/PocheHorsLigne'
+import { readPocketCopy } from '@/common/lib/pocketCopy'
+import { CoversThroughServer } from '@/common/lib/coverAddress'
+import { OfflinePocket } from '@/pages/offline/OfflinePocket'
 
 /**
  * `/wishlist` led to a screen that no longer exists: wishes are now a
@@ -135,14 +137,30 @@ function VerificationFailed({ message, onRetry, retrying }: { message: string; o
  */
 export function PorteFermee({ children }: { children: ReactNode }) {
   const { compte, enCoursDeVerification, verificationError, retryVerification, retryingVerification } = useAuth()
+  const online = useOnline()
+  // The app was already open (a phone resumes it without reloading) and the
+  // network went: the account is known, every page would only fail. The copy answers.
+  if (compte && !online) {
+    const copy = readPocketCopy()
+    if (copy) {
+      return (
+        <OfflinePocket
+          copy={copy}
+          message="Pas de réseau sur cet appareil."
+          onRetry={retryVerification}
+          retrying={retryingVerification}
+        />
+      )
+    }
+  }
   if (enCoursDeVerification) return <EnAttente />
   if (verificationError) {
     // No answer, but a copy kept on this device: the check before a purchase still works.
-    const poche = lirePoche()
-    if (poche) {
+    const copy = readPocketCopy()
+    if (copy) {
       return (
-        <PocheHorsLigne
-          poche={poche}
+        <OfflinePocket
+          copy={copy}
           message={verificationError.message}
           onRetry={retryVerification}
           retrying={retryingVerification}
@@ -218,7 +236,14 @@ export default function App() {
   return (
     <Suspense fallback={<EnAttente />}>
       <Routes>
-        <Route path="/public/share/:token" element={<SharedSpacePage />} />
+        <Route
+          path="/public/share/:token"
+          element={
+            <CoversThroughServer.Provider value={false}>
+              <SharedSpacePage />
+            </CoversThroughServer.Provider>
+          }
+        />
         <Route
           path="/*"
           element={

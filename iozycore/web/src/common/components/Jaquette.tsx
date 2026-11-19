@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { adresseJaquette } from '@/common/lib/adresseJaquette'
+import { useCoverAddress } from '@/common/lib/coverAddress'
 
 type Props = {
   /** The URL of the cover. Absent or empty: `repli` is rendered directly. */
@@ -51,9 +51,11 @@ export function Jaquette({ src, className, repli, loading = 'lazy' }: Props) {
 
   // An image served from the cache is complete before React attaches
   // `onLoad` in some browsers: it would stay invisible for ever.
-  // A BnF cover goes through the server first; where the server refuses (the
-  // public share page has no session), the direct address is the plan B.
-  const adresse = src ? [adresseJaquette(src), src].find((a) => !echecs.includes(a)) : undefined
+  // A BnF cover goes through the server (see coverAddress). No direct address as
+  // a plan B: when the server holds the BnF back, a direct load is the very burst
+  // that gets the address blocked.
+  const versAdresse = useCoverAddress()
+  const adresse = src && !echecs.includes(versAdresse(src)) ? versAdresse(src) : undefined
 
   useEffect(() => {
     const img = ref.current

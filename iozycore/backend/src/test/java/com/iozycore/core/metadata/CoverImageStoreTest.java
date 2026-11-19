@@ -79,6 +79,17 @@ class CoverImageStoreTest {
     }
 
     @Test
+    void a_cdn_that_times_out_once_is_not_silenced() {
+        URI anilist = URI.create("https://s4.anilist.co/file/a.jpg");
+        URI other = URI.create("https://s4.anilist.co/file/b.jpg");
+        FakeHost host = new FakeHost().answering(new Unreachable(), new Found(JPEG));
+        CoverImageStore store = store(host);
+
+        assertThat(store.get(anilist)).isEmpty();
+        assertThat(store.get(other)).isPresent();
+    }
+
+    @Test
     void a_cover_that_does_not_exist_does_not_silence_its_host() {
         FakeHost host = new FakeHost().answering(new Missing(), new Found(JPEG));
         CoverImageStore store = store(host);
