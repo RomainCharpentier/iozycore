@@ -4,15 +4,6 @@ iozycore/backend/target/
 .mvn/
 !iozycore/backend/.mvn/wrapper/
 
-# --- iOS (Swift/Xcode/XcodeGen) ---
-iozycore/ios/IozyCore.xcodeproj/
-iozycore/ios/*.xcworkspace/
-iozycore/ios/DerivedData/
-iozycore/ios/build/
-iozycore/ios/.build/
-iozycore/ios/xcuserdata/
-iozycore/ios/*.xcuserstate
-
 # --- Personal notes (addresses, logins, settings of one specific
 #     installation). The repository is PUBLIC: these files stay
 #     on the machine, and the documentation is written without them. ---

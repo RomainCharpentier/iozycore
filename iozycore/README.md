@@ -1,8 +1,8 @@
 # IozyCore — Guide de démarrage
 
 Ce guide réunit en un seul endroit tout ce qu'il faut pour lancer et tester
-IozyCore : le backend (API + base de données), l'app Web et, pour mémoire,
-l'app iOS (hors service). Les dossiers `backend/`, `ios/` et `web/` ont chacun leur propre README
+IozyCore : le backend (API + base de données) et l'app Web, le seul client
+(installable sur le téléphone). Les dossiers `backend/` et `web/` ont chacun leur propre README
 plus détaillé sur leur partie ; celui-ci sert de point d'entrée et de
 check-list. Ce dossier est IozyCore, une app du monorepo Iozy : la vue
 d'ensemble, IozyTest et la charte sont dans `../README.md`.
@@ -23,10 +23,6 @@ ligne de commande.
 ## Vue d'ensemble
 
 ```
-┌─────────────────┐      HTTP
-│   App iOS        │ ──────────────┐
-│ (Xcode/simulateur)│               │
-└─────────────────┘               ▼
                           ┌──────────────────┐      SQL      ┌────────────┐
                           │  API Spring Boot  │ ───────────▶  │ PostgreSQL │
                           │  (Docker)          │                │ (Docker)   │
@@ -58,9 +54,8 @@ frontières à chaque build et dessine la carte des modules dans
 service à part le jour où il le faudra.
 
 Le backend peut être testé **seul** (via Swagger UI ou `requests.http`,
-sans aucune app cliente). L'app iOS et l'app Web ont chacune besoin du
-backend lancé pour fonctionner (elles appellent `http://localhost:8080/api`,
-directement pour l'iOS, via le proxy de dev Vite pour le Web — voir
+sans aucune app cliente). L'app Web a besoin du backend lancé pour
+fonctionner (elle appelle `/api`, via le proxy de dev Vite — voir
 `web/README.md`).
 
 ---
@@ -439,84 +434,20 @@ c'est normal (les deux sont agrégées, jamais l'une à la place de l'autre).
 
 ---
 
-## Partie 2 — App iOS
+## L'app iOS, retirée
 
-> **Hors service depuis le 2026-08-29.** L'API demande une session, ce client
-> n'en ouvre aucune : tous ses appels reçoivent 401. Ce qu'il faudrait pour le
-> remettre en marche (trois points, plus courts qu'il n'y paraît) et les trois
-> issues possibles sont détaillés dans `ios/README.md`. La décision n'est pas
-> technique.
-
-Direction visuelle : fond sombre, accent vert-jaune vif, grille de
-couvertures en dégradé plutôt que des listes système (façon
-Letterboxd/Spotify). Étape optionnelle mais recommandée avant de lancer :
-voir `IozyCore/Fonts/README.md` pour ajouter les polices custom (Space
-Grotesk + Inter, 5 minutes) - sans elles, l'app tourne quand même, juste
-avec la police système en repli.
-
-### Prérequis
-
-- Mac + **Xcode** (15+, pour iOS 17/SwiftData).
-- **XcodeGen** : `brew install xcodegen` (une fois).
-- Le **backend doit déjà tourner** (Partie 1) avant de lancer l'app.
-- Un **iPhone physique** uniquement si tu veux tester le scan de
-  code-barres (pas de caméra sur le simulateur).
-
-### Lancer
-
-```bash
-cd ios
-xcodegen generate
-open IozyCore.xcodeproj
-```
-
-Dans Xcode : choisir un simulateur iPhone, cliquer sur **Run** (▶).
-
-### Tester le flux complet (backend + iOS ensemble) — historique
-
-> Ce parcours n'est plus jouable tant que l'iOS est hors service (tout reçoit
-> 401). Il est gardé pour mémoire : il décrit l'app telle qu'elle était le
-> 2026-08-28.
-
-1. Backend lancé (`docker compose up --build`).
-2. App iOS lancée sur le simulateur.
-3. Onglet **Ajouter** : taper "Death Note" → des suggestions Jikan
-   apparaissent après ~1 seconde → en choisir une pré-remplit le titre et
-   les attributs (auteur, éditeur) → **Ajouter**.
-4. Onglet **Étagères** : le manga apparaît immédiatement.
-5. Taper dessus → la fiche récupère ses Ownership/Experience depuis l'API.
-6. "Ajouter une expérience" → note + commentaire → **Enregistrer** :
-   l'appel `POST /api/experiences` passe réellement, avec validation
-   serveur du type contre l'`EntityType`.
-7. Onglet **Recherche** : taper "Death Note" → résultat remonté par une
-   vraie recherche sur ta collection côté serveur (UC4, pas juste un filtre
-   du cache local) → confirme "Déjà possédé" au tap.
-8. Onglet **Ajouter**, icône scanner (iPhone physique requis) : scanne le
-   code-barres ISBN au dos d'un manga → l'app interroge Open Library et
-   pré-remplit titre + attributs automatiquement si l'ISBN est reconnu
-   (sinon le code brut reste affiché). Pour un jeu vidéo/société, le scan
-   pré-remplit toujours juste le code brut (pas de source ISBN équivalente
-   pour ces types, voir limites ci-dessous).
-9. Dans la fiche détail, "Gérer les tags" pour créer/associer un tag, et
-   "Ajouter une relation" pour lier deux éléments de ta collection entre eux.
-10. Onglet **Étagères**, icône d'import : entre un pseudo BoardGameGeek
-    public, lance l'import — les jeux "possédés" de cette collection
-    apparaissent dans les Étagères après quelques secondes.
-11. Onglet **Stats** : vérifie que les compteurs reflètent ce qui vient
-    d'être ajouté (total, par type, note moyenne).
-12. Toujours dans Stats, "Voir des suggestions" : mangas du même auteur,
-    jeux tendance BGG en commun, ou jeux vidéo similaires (IGDB, si des
-    identifiants sont configurés) apparaissent — "Ajouter" les intègre direct.
-13. Onglet **Étagères**, icône "Gérer les types" : crée un type personnalisé
-    (ex: "Films", champ personnalisé "réalisateur") — il apparaît aussitôt
-    dans le picker de l'onglet Ajouter et les filtres des Étagères.
+Hors service depuis le 2026-08-29 (elle n'ouvrait pas de session, et l'API en
+demande une), l'app iOS en SwiftUI a été retirée du dépôt le 2026-11-19. Le
+téléphone passe par l'app Web installée sur l'écran d'accueil : scan par
+caméra et vérification sans réseau compris. Son code reste dans l'historique
+git (dernier état : commit `f18a8cae`, dossier `iozycore/ios`).
 
 ---
 
-## Partie 3 — App Web
+## Partie 2 — App Web
 
-Client React, **le client vivant** : navigation à trois entrées (Ma collection,
-Ajouter, Découvrir), installable comme une PWA en production. Voir
+Client React, **le seul client** : cinq destinations (Accueil, Collection,
+Sorties, À acheter, Partager), installable comme une PWA en production. Voir
 `web/README.md` pour le détail.
 
 ### Lancer
@@ -639,23 +570,18 @@ décrites plus haut) et `SESSION_COOKIE_SECURE` (à activer derrière HTTPS).
   (`app.iozycore.mondomaine.tld`) est un exemple à adapter à ton propre
   domaine/DDNS, comme celui de l'API — voir "Renommer le projet" plus haut
   pour l'équivalent côté API.
-- Le **scan de code-barres par caméra** de l'app Web (`/scan`) repose sur
-  l'API navigateur `BarcodeDetector` (Shape Detection API) : disponible sur
-  Chrome/Edge desktop et Android, absente de Safari et Firefox, où l'écran
-  annonce clairement le repli sur la saisie manuelle de l'ISBN. L'app Web n'a
-  par ailleurs pas de **cache hors-ligne** des données : le service worker ne
-  garde que la coquille de l'app, jamais `/api`.
+- Le **scan de code-barres par caméra** de l'app Web (`/scan`) utilise le
+  lecteur du navigateur (`BarcodeDetector`, Chrome/Edge, Android) ou, sur
+  Safari et Firefox, celui de l'app (WebAssembly, chargé au démarrage du scan).
+  Sans caméra, la saisie de l'ISBN reste le secours.
+- **Hors ligne**, l'app Web ne montre qu'une copie datée de la collection
+  (titres, numéros possédés et manquants), pour vérifier avant un achat : le
+  service worker ne garde que la coquille de l'app, jamais `/api`.
 
 ## En cas de problème
 
 - **`docker compose up` échoue au build** : vérifier que Docker Desktop
   tourne et a assez de mémoire allouée (4 Go minimum recommandé).
-- **(iOS, hors service) L'app iOS n'arrive pas à joindre l'API** : vérifier que
-  `docker compose up` est bien lancé et que `curl http://localhost:8080/...`
-  répond depuis le Mac. Le simulateur iOS partage le réseau du Mac, donc
-  `localhost` fonctionne tel quel — pas besoin de trouver une IP.
-- **`xcodegen: command not found`** : `brew install xcodegen`, puis relancer
-  `xcodegen generate`.
 - **Les tests Testcontainers échouent** : vérifier que le socket Docker est
   bien monté (`-v /var/run/docker.sock:/var/run/docker.sock`) et que Docker
   tourne sur la machine hôte.

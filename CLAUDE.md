@@ -2,7 +2,7 @@
 
 Le dépôt d'IozyCore et du site. IozyTest et IozyKit l'ont partagé du 2026-10-17 au 2026-11-13 ; ils ont repris leur propre dépôt, avec leur historique, et se clonent **à côté** de celui-ci (`Projets/iozytest`, `Projets/iozykit`).
 
-- `iozycore/` : IozyCore, le catalogue de collection (backend Spring Boot, client web React, app iOS hors service, maquettes). Son `CLAUDE.md` décrit l'architecture ; lis-le quand tu y travailles.
+- `iozycore/` : IozyCore, le catalogue de collection (backend Spring Boot, client web React installable sur le téléphone, maquettes). Son `CLAUDE.md` décrit l'architecture ; lis-le quand tu y travailles.
 - IozyKit, la charte commune : une dépendance du web épinglée sur un tag (archive HTTPS `IozyKit/archive/refs/tags/vX.Y.Z.tar.gz` dans `iozycore/web/package.json`). Changer la charte : un commit et un tag dans IozyKit, puis la nouvelle adresse ici et `npm install`.
 - IozyTest, le blindtest, une app voisine : la pile Docker locale le construit depuis le clone voisin `../iozytest`.
 - `docs/` : les documents communs (déploiement, exploitation, conception, journal des lots).

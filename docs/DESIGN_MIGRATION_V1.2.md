@@ -2329,3 +2329,12 @@ Ce qui restait après les lots 237 à 241 :
 
 Vérifié : 1 616 tests backend, 768 tests web, typecheck, lint ; `docker compose config` sur les trois
 fichiers ; l'API reconstruite voit les six réglages ; 34 contrôles de déploiement.
+
+### Lot 243 — L'app iOS retirée
+
+L'app iOS en SwiftUI était hors service depuis le 2026-08-29 (elle n'ouvrait pas de session). Le
+téléphone passe désormais par l'app web installée, qui scanne avec la caméra (lot 241) et vérifie
+sans réseau (lot 240). Le propriétaire a choisi de la retirer : le dossier `iozycore/ios` quitte le
+dépôt, son code reste dans l'historique git (dernier état : commit `f18a8cae`). Les README, les
+`CLAUDE.md`, la conception et le `.gitignore` ne la citent plus que comme retirée ; le README
+d'IozyCore perd sa partie iOS et ses dépannages Xcode.

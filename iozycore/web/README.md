@@ -142,8 +142,10 @@ départ, seul `:5173` y était). Toute nouvelle origine servant cette app
 
 ### État actuel
 
-Le Web est **le client vivant** : le client iOS est hors service depuis le
-2026-08-29 (voir `../ios/README.md`). La navigation a **trois entrées**, qui ne
+Le Web est **le seul client** : l'app iOS, hors service depuis le 2026-08-29,
+a été retirée le 2026-11-19 ; sur le téléphone, c'est cette app, installée.
+*Le paragraphe suivant date d'août : la barre compte aujourd'hui cinq
+destinations (voir `../../docs/USER_JOURNEYS.md`, §18).* La navigation a **trois entrées**, qui ne
 nomment aucun univers : **Ma collection** (`/`), **Ajouter** et la recherche
 (`/add`), **Découvrir** (`/discover`).
 
