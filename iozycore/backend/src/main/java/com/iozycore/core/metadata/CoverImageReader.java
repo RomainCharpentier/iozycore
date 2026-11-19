@@ -63,8 +63,32 @@ public class CoverImageReader {
         }
     }
 
+    /** What a host gave for one address. */
+    public sealed interface Fetch permits Found, Missing, Unreachable {
+    }
+
+    /** A usable image. */
+    public record Found(CoverImage image) implements Fetch {
+    }
+
+    /**
+     * The host answered, without a usable image (404, HTML, too big): asking again gives the same.
+     * A 500 of the BnF is one of them: it is how the BnF says it has no cover for an address.
+     */
+    public record Missing() implements Fetch {
+    }
+
+    /** No answer at all (reset, refused handshake, timeout): the host may be blocking this address for a while. */
+    public record Unreachable() implements Fetch {
+    }
+
     /** The image, or empty when its host did not give a usable one: the page then has its fallback. */
     public Optional<CoverImage> read(URI uri) {
+        return fetch(uri) instanceof Found found ? Optional.of(found.image()) : Optional.empty();
+    }
+
+    /** One call to the host, told apart as found, missing or unreachable. */
+    public Fetch fetch(URI uri) {
         try {
             HttpRequest request = HttpRequest.newBuilder(uri)
                     .timeout(Duration.ofSeconds(8))
@@ -75,18 +99,23 @@ public class CoverImageReader {
             try (InputStream body = response.body()) {
                 String type = response.headers().firstValue("Content-Type").orElse("")
                         .split(";")[0].trim().toLowerCase(Locale.ROOT);
+                // The BnF says "no cover" with a 500; any other 5xx is a host in trouble, not an answer.
+                boolean bnfNoCover = response.statusCode() == 500 && CoverImageStore.BNF_HOST.equals(uri.getHost());
+                if (response.statusCode() >= 500 && !bnfNoCover) {
+                    return new Unreachable();
+                }
                 if (response.statusCode() != 200 || !IMAGE_TYPES.contains(type)) {
-                    return Optional.empty();
+                    return new Missing();
                 }
                 byte[] bytes = body.readNBytes(MAX_BYTES + 1);
-                return bytes.length > MAX_BYTES ? Optional.empty() : Optional.of(new CoverImage(type, bytes));
+                return bytes.length > MAX_BYTES ? new Missing() : new Found(new CoverImage(type, bytes));
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return Optional.empty();
+            return new Unreachable();
         } catch (Exception e) {
             log.warn("Cover not read from {}: {}", uri.getHost(), e.getMessage());
-            return Optional.empty();
+            return new Unreachable();
         }
     }
 }

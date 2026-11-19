@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import { Jaquette } from '@/common/components/Jaquette'
+import { useCoverAddress } from '@/common/lib/coverAddress'
 import { mouvementReduit } from '@/common/lib/volJaquette'
 import { tonDe } from '@/common/lib/teinte/useTeinteJaquette'
 import type { VolumeAffiche } from './GrilleVolumes'
@@ -401,6 +402,7 @@ function Dos({
       ? 'bg-accentTint ring-2 ring-accentText ring-inset'
       : 'bg-surface/40 ring-1 ring-lineStrong ring-inset'
   const tranche = present ? (jaquetteUrl ?? jaquetteSerie ?? null) : null
+  const versAdresse = useCoverAddress()
 
   return (
     <button
@@ -423,7 +425,7 @@ function Dos({
       {tranche && (
         // A slice of the cover: the colors of the real book, not its text.
         <img
-          src={tranche}
+          src={versAdresse(tranche)}
           alt=""
           loading="lazy"
           decoding="async"

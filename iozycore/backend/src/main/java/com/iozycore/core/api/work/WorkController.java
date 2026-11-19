@@ -3,6 +3,7 @@ package com.iozycore.core.api.work;
 import com.iozycore.core.api.dto.WorkDtos.CollectionSummaryResponse;
 import com.iozycore.core.api.dto.WorkDtos.CollectorStatusRequest;
 import com.iozycore.core.api.dto.WorkDtos.CollectorStatusResponse;
+import com.iozycore.core.api.dto.WorkDtos.PocketWorkResponse;
 import com.iozycore.core.api.dto.WorkDtos.WorkProgressResponse;
 import com.iozycore.core.api.dto.WorkDtos.WorkResponse;
 import com.iozycore.core.application.work.WorkElementOwning;
@@ -44,6 +45,12 @@ public class WorkController {
     @GetMapping
     public List<WorkProgressResponse> list() {
         return works.works().stream().map(WorkProgressResponse::from).toList();
+    }
+
+    @Operation(summary = "Every owned or wished work with the numbers owned and missing, for a check without network")
+    @GetMapping("/pocket")
+    public List<PocketWorkResponse> pocket() {
+        return works.works().stream().map(PocketWorkResponse::from).toList();
     }
 
     @Operation(summary = "The objects of the collection: one active copy = one object; added this month")

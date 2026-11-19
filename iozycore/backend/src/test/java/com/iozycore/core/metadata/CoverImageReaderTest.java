@@ -1,8 +1,12 @@
 package com.iozycore.core.metadata;
 
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.net.InetSocketAddress;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,5 +33,27 @@ class CoverImageReaderTest {
     })
     void anything_else_is_refused(String url) {
         assertThat(CoverImageReader.allowedCoverUri(url)).isEmpty();
+    }
+
+    /** A 5xx of a CDN is a host in trouble; a closed port is a host that does not answer. */
+    @Test
+    void a_500_off_the_bnf_and_a_closed_port_are_unreachable() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> {
+            exchange.sendResponseHeaders(500, -1);
+            exchange.close();
+        });
+        server.start();
+        int port = server.getAddress().getPort();
+        try {
+            CoverImageReader reader = new CoverImageReader();
+            // Not the BnF host: a 500 is a host in trouble. (The BnF case is the host name, see fetch.)
+            assertThat(reader.fetch(URI.create("http://127.0.0.1:" + port + "/couverture")))
+                    .isInstanceOf(CoverImageReader.Unreachable.class);
+        } finally {
+            server.stop(0);
+        }
+        assertThat(new CoverImageReader().fetch(URI.create("http://127.0.0.1:" + port + "/couverture")))
+                .isInstanceOf(CoverImageReader.Unreachable.class);
     }
 }

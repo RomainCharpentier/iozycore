@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ChevronRight, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Jaquette } from '@/common/components/Jaquette'
+import { useCoverAddress } from '@/common/lib/coverAddress'
 import { getEntityTypeVisual } from '@/common/lib/entityTypeVisuals'
 import { gradientFor } from '@/common/theme/gradient'
 import type { AffichageCollection } from '@/common/lib/preferencesCollection'
@@ -321,11 +322,12 @@ function Objet({
 /** A slice of the real cover when the volume is here, an empty slot when it is not. */
 function Dos({ volume, jaquetteSerie }: { volume: DosSalle; jaquetteSerie: string | null }) {
   const tranche = volume.etat === 'possede' ? (volume.jaquetteUrl ?? jaquetteSerie) : null
+  const versAdresse = useCoverAddress()
   return (
     <span data-dos="" className={`salle-dos salle-dos-${volume.etat}`}>
       {tranche && (
         <img
-          src={tranche}
+          src={versAdresse(tranche)}
           alt=""
           loading="lazy"
           decoding="async"

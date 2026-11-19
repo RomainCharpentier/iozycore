@@ -2242,3 +2242,68 @@ proxy répond 502 et l écran montre la lettre de repli) et les rails du bas vid
 règle par `localStorage` (`iozycore.theme`), pas par `prefers-color-scheme`.
 
 Vérifié : 0 débordement sur les 25 écrans après correction, 28 parcours e2e. Pas relu au niveau du mobile (lot suivant).
+
+### Lot 237 — La pile locale sans IozyTest
+
+Depuis qu'IozyTest a son dépôt, `docker compose up` échouait sans clone voisin et ne lançait rien.
+IozyTest passe derrière le profil `iozytest` (`docker compose --profile iozytest up --build`). Sans
+lui, `/test/` répond par une courte page en français (503, « IozyTest n'est pas lancé ») au lieu
+d'un 502 brut ; `check:deploiement` vérifie cette page et l'annonce en avertissement (normal en local,
+une panne sur le NAS).
+
+Vérifié : pile reconstruite sans le clone, 34 contrôles de déploiement sur :8081.
+
+### Lot 238 — Passe mobile après la refonte
+
+Les 21 écrans d'IozyCore en 390 × 844, sombre et clair, sur une collection jetable (pile e2e,
+jaquettes AniList). Aucun débordement. Trois défauts corrigés : le bandeau du chiffre de la fiche
+s'arrêtait 15 px avant la gouttière (il prend toute la largeur sur téléphone) ; la case « édition
+dépassée » de l'analyse faisait 40 px de haut ; le bouton de fichier de la restauration était le
+dernier bouton carré écrit à la main (pilule). Sorties, vide et jamais cherchée, disait deux fois
+la même chose avec le bouton loin en bas : l'état vide porte maintenant le seul bouton « Chercher
+les sorties », et la page garde son grand titre.
+
+Vérifié : 753 tests web (mutation de la ligne cachée attrapée), typecheck, lint ; bandeau mesuré
+de 16 à 374 px.
+
+### Lot 239 — Les jaquettes de la BnF gardées par le serveur
+
+La BnF coupe une adresse un quart d'heure après une rafale, et une étagère de série longue demande
+des dizaines de jaquettes d'un coup, à chaque visite. Les jaquettes BnF passent maintenant par
+`/api/covers/image` : le serveur garde chacune sur le volume média après la première lecture,
+appelle un hôte deux fois à la fois (la BnF à 400 ms d'écart au moins), laisse tranquille un hôte
+muet cinq minutes, et retient une jaquette absente un jour. Un 500 de la BnF veut dire « pas de
+jaquette », pas une panne. La page publique, sans session, charge la BnF en direct ; ailleurs, un refus du serveur montre le
+repli, jamais un chargement direct (ce serait la rafale qu'on évite). Seule la BnF est mise au repos.
+L'image crée `/app/media` pour son utilisateur : un volume neuf est inscriptible.
+
+Vérifié : 1 612 tests backend, tests du magasin et du lecteur ; en direct, une jaquette gardée
+répond en 7 ms au lieu de 690 ms et se trouve dans `/app/media/covers`.
+
+### Lot 240 — Vérifier sans réseau
+
+Le parcours 3 de la conception (vérifier avant d'acheter, même sans réseau) n'était pas tenu : l'app
+iOS est hors service et l'app web ne s'ouvrait pas sans serveur. L'app garde maintenant une copie de
+poche de la collection sur l'appareil (`GET /api/works/pocket` : chaque œuvre possédée ou voulue,
+avec les numéros possédés et manquants), relue à chaque ouverture et après chaque ajout. Quand le
+serveur ne répond pas, la porte ouvre « Ta collection, sans réseau » : une recherche dans la copie,
+qui dit sa date et que les ajouts suivants n'y sont pas (« Tu as : 1 à 5, 7, 8 · il te manque : 6 »).
+Le même écran s'ouvre quand l'appareil perd le réseau alors que l'app était ouverte. La copie
+s'efface à chaque connexion, visite et déconnexion. Rien ne s'écrit depuis cet écran.
+
+Vérifié : test de contrat (possédés 2, 4 ; manquants 1, 3), 764 tests web ; build de production
+avec service worker dans Chromium à 390 px, réseau coupé : la copie répond pour One Piece.
+
+### Lot 241 — Le scan par caméra sur iPhone
+
+Safari n'a pas `BarcodeDetector` : sur iPhone, le scan disait « pas supporté » et renvoyait à la
+saisie de l'ISBN. Le propriétaire a accepté une bibliothèque : `barcode-detector` 3.2.3 (MIT, lecteur
+zxing en WebAssembly). Elle n'est chargée que là où le navigateur n'a pas son lecteur, au moment où
+le scan démarre (415 Ko compressés). Son `.wasm` est servi par l'app (`/core/assets/`, en
+`application/wasm`), pas par le CDN public qu'elle prend par défaut. L'écran dit « Lecteur intégré à
+l'app : ce navigateur n'a pas le sien », et le bouton annonce « Préparation du lecteur… » pendant le
+chargement. Sans caméra, la saisie de l'ISBN reste le secours.
+
+Vérifié : tests du choix du lecteur et de l'adresse du `.wasm`, 768 tests web, typecheck, lint ;
+build de production dans Chromium privé de `BarcodeDetector`, une fausse caméra filmant un EAN-13 :
+le code 9782505000334 est lu et cherché. Pas essayé sur un vrai iPhone.

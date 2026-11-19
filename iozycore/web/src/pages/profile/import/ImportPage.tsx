@@ -85,7 +85,7 @@ export function ImportPage() {
         />
         <label
           htmlFor="fichier-import"
-          className={`flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accentInk peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent ${
+          className={`btn-primaire w-fit cursor-pointer peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent ${
             enCours ? 'pointer-events-none opacity-50' : ''
           }`}
         >

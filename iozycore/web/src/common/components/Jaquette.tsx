@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCoverAddress } from '@/common/lib/coverAddress'
 
 type Props = {
   /** The URL of the cover. Absent or empty: `repli` is rendered directly. */
@@ -39,10 +40,10 @@ type Props = {
  * single place.
  */
 export function Jaquette({ src, className, repli, loading = 'lazy' }: Props) {
-  // We remember the faulty URL, not a simple boolean: otherwise, fixing the
+  // We remember the faulty URLs, not a simple boolean: otherwise, fixing the
   // cover of a series ("Modifier la couverture") would leave the fallback
   // displayed for the NEW URL, which has never failed.
-  const [urlEnEchec, setUrlEnEchec] = useState<string | null>(null)
+  const [echecs, setEchecs] = useState<string[]>([])
   // The URL that has ARRIVED, for the same reason: a new cover starts
   // invisible again until it is really there.
   const [urlChargee, setUrlChargee] = useState<string | null>(null)
@@ -50,24 +51,30 @@ export function Jaquette({ src, className, repli, loading = 'lazy' }: Props) {
 
   // An image served from the cache is complete before React attaches
   // `onLoad` in some browsers: it would stay invisible for ever.
+  // A BnF cover goes through the server (see coverAddress). No direct address as
+  // a plan B: when the server holds the BnF back, a direct load is the very burst
+  // that gets the address blocked.
+  const versAdresse = useCoverAddress()
+  const adresse = src && !echecs.includes(versAdresse(src)) ? versAdresse(src) : undefined
+
   useEffect(() => {
     const img = ref.current
-    if (src && img && img.complete && img.naturalWidth > 0) setUrlChargee(src)
-  }, [src])
+    if (adresse && img && img.complete && img.naturalWidth > 0) setUrlChargee(adresse)
+  }, [adresse])
 
-  if (!src || src === urlEnEchec) return <>{repli}</>
+  if (!adresse) return <>{repli}</>
 
   // Fades in once downloaded (batch 191): a cover that pops in over its
   // fallback, a few hundred milliseconds after the page, read as a glitch.
-  const arrivee = urlChargee === src
+  const arrivee = urlChargee === adresse
   return (
     <img
       ref={ref}
-      src={src}
+      src={adresse}
       alt=""
       loading={loading}
-      onLoad={() => setUrlChargee(src)}
-      onError={() => setUrlEnEchec(src)}
+      onLoad={() => setUrlChargee(adresse)}
+      onError={() => setEchecs((avant) => [...avant, adresse])}
       className={`${className ?? ''} transition-opacity duration-300 ${arrivee ? 'opacity-100' : 'opacity-0'}`}
     />
   )

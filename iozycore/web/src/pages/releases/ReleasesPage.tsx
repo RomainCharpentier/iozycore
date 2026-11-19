@@ -70,10 +70,13 @@ export function ReleasesPage() {
   const typesQuery = useQuery({ queryKey: queryKeys.entityTypes.all, queryFn: listEntityTypes })
   const oeuvresQuery = useQuery({ queryKey: queryKeys.works.list, queryFn: listWorks, enabled: !estInvite })
   const typesParId = useMemo(() => new Map((typesQuery.data ?? []).map((t) => [t.id, t])), [typesQuery.data])
-  const { status: etatMiseAJour } = useReleaseRefresh()
+  const { status: etatMiseAJour, launch: startRefresh } = useReleaseRefresh()
   const jamaisConsultees = !!etatMiseAJour?.available && !etatMiseAJour.lastRun
 
   const toutes = calendrierQuery.data?.entries ?? []
+  // Nothing listed and the sources never read: the empty state carries the one button.
+  const firstSearch =
+    calendrierQuery.isSuccess && toutes.length === 0 && jamaisConsultees && !estInvite && !etatMiseAJour?.running
   const comptes = compterParCategorie(toutes)
   // A chosen category that no longer has a release falls back on "Tout": a
   // chip that cannot be seen must not filter silently.
@@ -117,12 +120,13 @@ export function ReleasesPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* The visible title comes with the timeline; an empty year still names the page. */}
-      {toutes.length === 0 && <h1 className="sr-only">Sorties</h1>}
+      {/* An empty year still opens on the name of the page, like every destination (lot 224). */}
+      {calendrierQuery.isSuccess && toutes.length === 0 && <GrandTitre titre="Sorties" />}
 
       {calendrierQuery.isError && <ErrorBanner message={calendrierQuery.error.message} />}
       {calendrierQuery.isLoading && <Squelette lignes={4} />}
       {jeLAi.isError && <ErrorBanner message={jeLAi.error.message} />}
+      {firstSearch && startRefresh.isError && <ErrorBanner message={startRefresh.error.message} />}
 
       {calendrierQuery.isSuccess && toutes.length === 0 && (
         <EtatVide
@@ -134,8 +138,20 @@ export function ReleasesPage() {
                 ? "Les sources n'ont pas encore été lues."
                 : 'Aucune sortie annoncée pour cette collection.'
               : jamaisConsultees
-                ? 'Lance une mise à jour ci-dessous : les sources seront lues pour ta collection et tes envies.'
+                ? 'Les sources seront lues pour ta collection et tes envies.'
                 : 'Ajoute une œuvre à ta collection ou à tes envies, ou suis-la depuis sa fiche, pour voir ses sorties ici.'
+          }
+          action={
+            firstSearch ? (
+              <button
+                type="button"
+                onClick={() => startRefresh.mutate()}
+                disabled={startRefresh.isPending}
+                className="btn-primaire"
+              >
+                Chercher les sorties
+              </button>
+            ) : undefined
           }
         />
       )}
@@ -212,7 +228,8 @@ export function ReleasesPage() {
 
       <div className="flex flex-col gap-4">
         {!estInvite && <AbonnementAgenda />}
-        <ReleaseRefreshLine />
+        {/* The empty state already asks for the first search: the line would say it twice. */}
+        {!firstSearch && <ReleaseRefreshLine />}
       </div>
     </div>
   )

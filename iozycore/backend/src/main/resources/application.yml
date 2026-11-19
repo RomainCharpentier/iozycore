@@ -36,6 +36,10 @@ iozycore:
       # A pass stops after this many series in a row without any answer (quota).
       max-silent-series-in-a-row: 3
   covers:
+    # Where the covers served by /api/covers/image are kept once read (the
+    # media volume of the image): a cover is fetched from its host once,
+    # never again. Without a writable folder they are served, not kept.
+    cache-dir: ${COVERS_CACHE_DIR:/app/media/covers}
     # The missing covers of the manga volumes (batch 194): a volume added by
     # number, by photo or during a provider outage has none, and nobody
     # presses "Retrouver les jaquettes manquantes". The catalogue fills them

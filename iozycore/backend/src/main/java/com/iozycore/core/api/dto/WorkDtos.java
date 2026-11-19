@@ -106,6 +106,34 @@ public final class WorkDtos {
         }
     }
 
+    /**
+     * One work in the pocket copy the web keeps for a check without network ("do I have
+     * volume 7?" in a shop). Only what that answer needs: no cover, no dates.
+     *
+     * @param ownedNumbers   the numbered elements owned, in order
+     * @param missingNumbers the numbered elements counted missing (published, lacking, work ONGOING)
+     * @param ownedLabels    the owned elements without a number (a game, a work owned as one piece)
+     */
+    public record PocketWorkResponse(UUID entityId, UUID entityTypeId, String title, int ownedCount,
+                                     Integer totalCount, int wishedCount, List<Integer> ownedNumbers,
+                                     List<Integer> missingNumbers, List<String> ownedLabels) {
+
+        public static PocketWorkResponse from(WorkView view) {
+            List<WorkView.CountedElement> elements = view.elements();
+            return new PocketWorkResponse(view.entityId(), view.entityTypeId(), view.title(), view.ownedCount(),
+                    view.totalCount(), view.wishedCount(),
+                    elements.stream()
+                            .filter(c -> c.element().state() == WorkElement.State.OWNED && c.element().number() != null)
+                            .map(c -> c.element().number()).sorted().toList(),
+                    elements.stream()
+                            .filter(c -> c.countedAsMissing() && c.element().number() != null)
+                            .map(c -> c.element().number()).sorted().toList(),
+                    elements.stream()
+                            .filter(c -> c.element().state() == WorkElement.State.OWNED && c.element().number() == null)
+                            .map(c -> c.element().label()).toList());
+        }
+    }
+
     public record CollectorStatusRequest(CollectorStatus status) {
     }
 

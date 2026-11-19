@@ -3,6 +3,7 @@ import { Contexte } from './usePleinCadre'
 import { useTheme } from '@/common/lib/theme'
 import { TERRACOTTA, deriverTeintes, enRgb } from '@/common/lib/teinte/derivation'
 import { useAccent } from '@/common/lib/accent'
+import { useCoverAddress } from '@/common/lib/coverAddress'
 import { useTeinteJaquette } from '@/common/lib/teinte/useTeinteJaquette'
 
 /**
@@ -75,9 +76,10 @@ export function PleinCadreProvider({ children }: { children: ReactNode }) {
 /** The full-screen backdrop: the blurred cover under its veil. Decorative. */
 export function FondPleinCadre() {
   const { url } = useContext(Contexte)
+  const versAdresse = useCoverAddress()
   return (
     <div aria-hidden="true" className="fond-plein-cadre">
-      {url && <img key={url} src={url} alt="" className="fond-plein-cadre__image" decoding="async" />}
+      {url && <img key={url} src={versAdresse(url)} alt="" className="fond-plein-cadre__image" decoding="async" />}
       <div className="fond-plein-cadre__voile" />
       <div className="fond-plein-cadre__aurore" />
     </div>

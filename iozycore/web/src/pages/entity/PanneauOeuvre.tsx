@@ -48,7 +48,8 @@ export function PanneauOeuvre({
               band in the cover colour - the figure, then what is missing. The status and
               the shelving gesture sit on the same line, the volumes right under it. */}
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="aplat flex flex-wrap items-baseline gap-x-5 gap-y-1 px-6 py-4">
+            {/* Full width on a phone: shrink-wrapped, it stopped a few pixels short of the gutter. */}
+            <div className="aplat flex w-full flex-wrap items-baseline gap-x-5 gap-y-1 px-6 py-4 sm:w-auto">
               <p className="font-display text-[clamp(3.5rem,6vw,5rem)] leading-[0.85] font-bold tracking-[-0.06em] tabular-nums">
                 {/* "1 / 6" is read "1 slash 6": the figures are for the eye, the phrase for the ear. */}
                 <span aria-hidden="true">{totalConnu ? `${work.ownedCount} / ${work.totalCount}` : `${work.ownedCount}`}</span>

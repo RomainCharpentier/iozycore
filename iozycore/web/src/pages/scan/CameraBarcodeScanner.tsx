@@ -1,20 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Camera, CameraOff } from 'lucide-react'
-
-/** Native browser detector (Shape Detection API) - supported in Chrome/Edge/
-  * Opera (desktop + Android), missing from Safari and Firefox today. No JS
-  * library was added to fill the gap: on an unsupported browser, this
-  * component only shows a message, and the existing manual entry (see
-  * BarcodeLookupField) is the only fallback. */
-interface BarcodeDetectorLike {
-  detect(source: CanvasImageSource): Promise<Array<{ rawValue: string }>>
-}
-
-declare global {
-  interface Window {
-    BarcodeDetector?: new (options: { formats: string[] }) => BarcodeDetectorLike
-  }
-}
+import { createBarcodeDetector, type BarcodeDetectorLike } from './barcodeDetector'
 
 const BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e']
 /** Avoids firing the same code again while it stays in the frame -
@@ -36,8 +22,11 @@ export function CameraBarcodeScanner({ onScan }: { onScan: (code: string) => voi
   const lastSeenRef = useRef<Map<string, number>>(new Map())
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [preparing, setPreparing] = useState(false)
+  const [builtIn, setBuiltIn] = useState(false)
 
-  const supported = typeof window !== 'undefined' && !!window.BarcodeDetector
+  // Every browser can read a barcode now (see barcodeDetector); what can be missing is the camera.
+  const supported = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
 
   useEffect(() => {
     return () => stop()
@@ -69,8 +58,16 @@ export function CameraBarcodeScanner({ onScan }: { onScan: (code: string) => voi
   }
 
   async function start() {
-    if (!window.BarcodeDetector) return
     setError(null)
+    setPreparing(true)
+    let reader
+    try {
+      reader = await createBarcodeDetector(BARCODE_FORMATS)
+    } catch {
+      setPreparing(false)
+      setError('Le lecteur de code-barres n’a pas pu se charger. Saisis le code ci-dessous.')
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       streamRef.current = stream
@@ -78,11 +75,14 @@ export function CameraBarcodeScanner({ onScan }: { onScan: (code: string) => voi
         videoRef.current.srcObject = stream
         await videoRef.current.play()
       }
-      detectorRef.current = new window.BarcodeDetector({ formats: BARCODE_FORMATS })
+      detectorRef.current = reader.detector
+      setBuiltIn(reader.builtIn)
       setScanning(true)
       rafRef.current = requestAnimationFrame(detectLoop)
     } catch {
       setError("Impossible d'accéder à la caméra - vérifie les autorisations du navigateur.")
+    } finally {
+      setPreparing(false)
     }
   }
 
@@ -100,8 +100,7 @@ export function CameraBarcodeScanner({ onScan }: { onScan: (code: string) => voi
   if (!supported) {
     return (
       <p className="rounded-xl bg-surface p-3 text-sm text-textDim">
-        Le scan caméra n'est pas supporté par ce navigateur (Chrome/Edge sur Android ou ordinateur uniquement pour
-        l'instant) - utilise la recherche par code-barres manuelle ci-dessous à la place.
+        Ce navigateur ne donne pas accès à la caméra : saisis le code-barres ci-dessous.
       </p>
     )
   }
@@ -114,14 +113,19 @@ export function CameraBarcodeScanner({ onScan }: { onScan: (code: string) => voi
       </div>
 
       {error && <p className="text-xs text-danger">{error}</p>}
+      {/* The fallback is said, like every fallback of the app. */}
+      {scanning && builtIn && (
+        <p className="text-xs text-textDim">Lecteur intégré à l’app : ce navigateur n’a pas le sien.</p>
+      )}
 
       <button
         type="button"
         onClick={scanning ? stop : start}
+        disabled={preparing}
         className="btn-primaire"
       >
         {scanning ? <CameraOff size={16} /> : <Camera size={16} />}
-        {scanning ? 'Arrêter le scan' : 'Démarrer le scan'}
+        {scanning ? 'Arrêter le scan' : preparing ? 'Préparation du lecteur…' : 'Démarrer le scan'}
       </button>
     </div>
   )

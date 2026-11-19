@@ -59,6 +59,23 @@
       "port": 5174
     },
     {
+      "name": "web-prod-e2e-mac",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "IOZYCORE_API=http://localhost:8090",
+        "npm",
+        "run",
+        "preview",
+        "--prefix",
+        "iozycore/web",
+        "--",
+        "--port",
+        "4174",
+        "--strictPort"
+      ],
+      "port": 4174
+    },
+    {
       "name": "iozytest-server",
       "runtimeExecutable": "node",
       "runtimeArgs": [

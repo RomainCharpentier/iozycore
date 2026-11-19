@@ -89,7 +89,12 @@ services:
   # address for every Iozy app. IozyTest has its own repository since
   # 2026-11-13: it is built from a clone of it NEXT TO this one
   # (Projets/iozytest beside the folder of this repository).
+  # It is OPTIONAL, behind a profile: without the clone, a plain
+  # `docker compose up --build` would fail to build it and start nothing.
+  # With the clone: `docker compose --profile iozytest up --build`.
+  # Without it, nginx answers /test/ with a short page that says so.
   iozytest:
+    profiles: ["iozytest"]
     build:
       context: ../../../iozytest
     restart: unless-stopped
