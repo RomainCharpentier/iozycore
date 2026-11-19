@@ -189,25 +189,6 @@ export interface YearlyRecapDto {
   availableYears: number[]
 }
 
-export interface DiscoveryCandidateDto {
-  source: string
-  externalId: string
-  title: string
-  imageUrl: string | null
-  reason: string
-}
-
-/** Why a universe had nothing to ask its source (see Discovery.EmptyReason on the server). */
-export type DiscoveryEmptyReason = 'NOTHING_OWNED' | 'NO_RATED_WORK' | 'NO_KNOWN_AUTHOR' | 'NOT_LINKED_TO_SOURCE'
-
-export interface DiscoveryDto {
-  candidates: DiscoveryCandidateDto[]
-  /** False when the external source did not answer: an empty list then means "try again". */
-  sourceAnswered: boolean
-  /** Why nothing was asked of the source; null when it was asked. */
-  emptyReason: DiscoveryEmptyReason | null
-}
-
 // --- Metadata ---
 export interface MetadataCandidateDto {
   source: 'JIKAN' | 'MYANIMELIST' | 'ANILIST' | 'BGG' | 'IGDB' | 'OPEN_LIBRARY' | 'GOOGLE_BOOKS'
@@ -394,11 +375,6 @@ export interface ReleaseEntryDto {
   relation: ReleaseRelation
   /** Where the date comes from: GOOGLE_BOOKS, IGDB, or MANUAL for a date entered on the detail page. */
   source: string
-}
-
-/** The latest releases, newest first - the server picks them, no period to give. */
-export interface LatestReleasesDto {
-  entries: ReleaseEntryDto[]
 }
 
 /**

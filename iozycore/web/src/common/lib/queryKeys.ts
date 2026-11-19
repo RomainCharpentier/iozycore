@@ -51,7 +51,6 @@ export const queryKeys = {
   shareValue: ['share', 'value'] as const,
   insights: {
     stats: ['insights', 'stats'] as const,
-    discover: (entityTypeCode: string) => ['insights', 'discover', entityTypeCode] as const,
     timeline: ['insights', 'timeline'] as const,
     yearlyRecap: (year: number) => ['insights', 'yearlyRecap', year] as const,
     value: ['insights', 'value'] as const,
@@ -62,8 +61,6 @@ export const queryKeys = {
     progressOf: (entityId: string) => ['insights', 'progress', entityId] as const,
     /** The release calendar of a period - one month on screen, one year for the lists. */
     releases: (from: string, to: string) => ['insights', 'releases', from, to] as const,
-    /** The latest releases of the Discover preview. Under 'releases': the same invalidations reach it. */
-    latestReleases: ['insights', 'releases', 'latest'] as const,
     /** When the release dates were last refreshed, and whether a pass is running. */
     releaseRefresh: ['insights', 'release-refresh'] as const,
   },
