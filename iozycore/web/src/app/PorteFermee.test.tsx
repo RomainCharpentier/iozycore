@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/common/api/client'
 import { queryKeys } from '@/common/lib/queryKeys'
+import { ecrirePoche } from '@/common/lib/poche'
 import { PorteFermee } from './App'
 
 const api = vi.hoisted(() => ({ lireCompte: vi.fn(), lireEtatAuth: vi.fn() }))
@@ -34,6 +35,7 @@ function rendre() {
 }
 
 beforeEach(() => {
+  localStorage.clear()
   api.lireCompte.mockReset()
   api.lireEtatAuth.mockReset().mockResolvedValue({ aucunCompte: false, creationOuverte: false })
 })
@@ -50,6 +52,21 @@ describe('the gate', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Réessayer' }))
 
     expect(await screen.findByText('La collection')).toBeInTheDocument()
+  })
+
+  it('opens the copy kept on the device when the server fails, to check before a purchase', async () => {
+    ecrirePoche([
+      {
+        entityId: 'op', entityTypeId: 'manga', title: 'One Piece', ownedCount: 2, totalCount: null, wishedCount: 0,
+        ownedNumbers: [1, 2], missingNumbers: [], ownedLabels: [],
+      },
+    ])
+    api.lireCompte.mockRejectedValueOnce(new ApiError(502, 'Le serveur ne répond pas.'))
+    rendre()
+
+    expect(await screen.findByRole('heading', { name: 'Ta collection, sans réseau' })).toBeInTheDocument()
+    expect(screen.getByText('Le serveur ne répond pas.')).toBeInTheDocument()
+    expect(screen.queryByText('Formulaire de connexion')).not.toBeInTheDocument()
   })
 
   it('keeps the account already read when a later check fails', async () => {

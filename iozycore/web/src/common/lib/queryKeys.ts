@@ -29,6 +29,8 @@ export const queryKeys = {
     detail: (entityId: string) => ['works', 'detail', entityId] as const,
     /** The home page "ta semaine" (lot 212): under 'works', so every ownership or wish refreshes it. */
     home: ['works', 'home'] as const,
+    /** The pocket copy (offline check): under 'works', so every ownership or wish refreshes it. */
+    pocket: ['works', 'pocket'] as const,
   },
   /** The followed works of the account: the third state, next to ownerships and wishes. */
   followedWorks: { all: ['followedWorks'] as const },

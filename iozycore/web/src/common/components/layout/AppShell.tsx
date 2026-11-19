@@ -8,6 +8,7 @@ import { PiedDePage } from './PiedDePage'
 import { FondPleinCadre, PleinCadreProvider } from '@/common/components/pleinCadre/PleinCadre'
 import { useRefusDeVisite } from '@/common/hooks/useRefusDeVisite'
 import { usePreferencesCompte } from '@/common/hooks/usePreferencesCompte'
+import { useGarderLaPoche } from '@/common/hooks/useGarderLaPoche'
 
 /** Single switch point between the thumb bar (BarreOnglets, at the bottom,
  * fixed) and the top bar (BarreDuHaut, floating at the top) - see
@@ -138,6 +139,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   useRefusDeVisite()
   // The theme, the accent and the title languages follow the account (lot 218).
   usePreferencesCompte()
+  // The copy read by the offline screen (see PocheHorsLigne), kept fresh while online.
+  useGarderLaPoche()
   return (
     // No background here: the page is painted by the full-screen backdrop
     // (FondPleinCadre, fixed under everything), the cover of the moment.

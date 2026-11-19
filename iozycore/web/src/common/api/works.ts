@@ -3,6 +3,7 @@ import type {
   CollectionSummaryDto,
   CollectorStatus,
   CollectorStatusDto,
+  PocketWorkDto,
   WorkDto,
   WorkProgressDto,
 } from '../types/api'
@@ -16,6 +17,11 @@ export function fetchWork(entityId: string): Promise<WorkDto> {
 /** Every work the account owns or wishes, most recently moved first (home, "to buy"). */
 export function listWorks(): Promise<WorkProgressDto[]> {
   return get<WorkProgressDto[]>('/works')
+}
+
+/** Every owned or wished work with the numbers owned and missing: the copy kept for a check without network. */
+export function fetchPocket(): Promise<PocketWorkDto[]> {
+  return get<PocketWorkDto[]>('/works/pocket')
 }
 
 /** The objects of the collection: one active copy = one object, and this month's additions. */

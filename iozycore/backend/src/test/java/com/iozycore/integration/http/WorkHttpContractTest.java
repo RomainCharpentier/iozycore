@@ -101,6 +101,21 @@ class WorkHttpContractTest extends HttpContractTestBase {
         System.out.println("GET /api/works -> " + body.substring(0, Math.min(body.length(), 600)));
     }
 
+    /** The copy the web keeps for a check without network: which numbers are owned, which are missing. */
+    @Test
+    void the_pocket_copy_says_which_volumes_are_owned_and_which_are_missing() throws Exception {
+        String serie = "Monster " + UUID.randomUUID();
+        UUID entityId = volume(serie, 2);
+        volume(serie, 4);
+
+        mockMvc.perform(get("/api/works/pocket"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.entityId == '" + entityId + "')].title").value(serie))
+                .andExpect(jsonPath("$[?(@.entityId == '" + entityId + "')].ownedNumbers[*]").value(org.hamcrest.Matchers.contains(2, 4)))
+                .andExpect(jsonPath("$[?(@.entityId == '" + entityId + "')].missingNumbers[*]").value(org.hamcrest.Matchers.contains(1, 3)))
+                .andExpect(jsonPath("$[?(@.entityId == '" + entityId + "')].coverImageUrl").doesNotExist());
+    }
+
     @Test
     void the_collector_status_pauses_the_missing_count_and_refuses_what_it_cannot_read() throws Exception {
         String serie = "One Piece " + UUID.randomUUID();

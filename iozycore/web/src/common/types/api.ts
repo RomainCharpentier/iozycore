@@ -543,6 +543,22 @@ export interface WorkProgressDto {
   lastMovedAt: string | null
 }
 
+/** GET /api/works/pocket: one work of the copy kept for a check without network. */
+export interface PocketWorkDto {
+  entityId: UUID
+  entityTypeId: UUID
+  title: string
+  ownedCount: number
+  totalCount: number | null
+  wishedCount: number
+  /** The numbered elements owned, in order. */
+  ownedNumbers: number[]
+  /** The numbered elements counted missing (published, lacking, work ongoing). */
+  missingNumbers: number[]
+  /** The owned elements without a number (a game, a work owned as one piece). */
+  ownedLabels: string[]
+}
+
 export interface CollectorStatusDto {
   entityId: UUID
   collectorStatus: CollectorStatus

@@ -10,6 +10,8 @@ import { estReserveeAuxComptes } from '@/common/lib/accesInvite'
 import { useDocumentTitleFromHeading } from '@/common/hooks/useDocumentTitle'
 import { useScrollToTopOnNavigation } from '@/common/hooks/useScrollToTop'
 import { definirPreferencesCollection } from '@/common/lib/preferencesCollection'
+import { lirePoche } from '@/common/lib/poche'
+import { PocheHorsLigne } from '@/pages/hors-ligne/PocheHorsLigne'
 
 /**
  * `/wishlist` led to a screen that no longer exists: wishes are now a
@@ -135,6 +137,18 @@ export function PorteFermee({ children }: { children: ReactNode }) {
   const { compte, enCoursDeVerification, verificationError, retryVerification, retryingVerification } = useAuth()
   if (enCoursDeVerification) return <EnAttente />
   if (verificationError) {
+    // No answer, but a copy kept on this device: the check before a purchase still works.
+    const poche = lirePoche()
+    if (poche) {
+      return (
+        <PocheHorsLigne
+          poche={poche}
+          message={verificationError.message}
+          onRetry={retryVerification}
+          retrying={retryingVerification}
+        />
+      )
+    }
     return (
       <VerificationFailed
         message={verificationError.message}
