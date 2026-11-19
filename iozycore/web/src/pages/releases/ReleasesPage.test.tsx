@@ -151,8 +151,18 @@ describe('ReleasesPage', () => {
     servir([])
     insights.getReleaseRefreshStatus.mockResolvedValue({ available: true, running: false, lastRun: null })
     rendre()
-    expect(await screen.findByText("Les sources de sorties n'ont pas encore été consultées.")).toBeInTheDocument()
-    expect(screen.getByText("Les sorties n'ont pas encore été cherchées.")).toBeInTheDocument()
+    expect(await screen.findByText("Les sorties n'ont pas encore été cherchées.")).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Sorties' })).toBeInTheDocument()
+  })
+
+  it('asks for the first search once, in the empty state', async () => {
+    servir([])
+    insights.getReleaseRefreshStatus.mockResolvedValue({ available: true, running: false, lastRun: null })
+    rendre()
+    expect(await screen.findByRole('button', { name: 'Chercher les sorties' })).toBeInTheDocument()
+    // The footnote line would repeat it with a second button.
+    expect(screen.queryByText("Les sources de sorties n'ont pas encore été consultées.")).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mettre à jour maintenant' })).not.toBeInTheDocument()
   })
 
   it('does not send a guest to a refresh button they do not have', async () => {
