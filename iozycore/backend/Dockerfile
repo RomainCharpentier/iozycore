@@ -24,7 +24,10 @@ WORKDIR /app
 # pretending to be a release.
 ARG VERSION=dev
 ENV IOZYCORE_VERSION=$VERSION
-RUN useradd --system --create-home iozycore
+# A new media volume takes the owner of this folder, so the app can write in
+# it (the kept covers, see CoverImageStore). Without it, root.
+RUN useradd --system --create-home iozycore \
+    && mkdir -p /app/media && chown iozycore /app/media
 USER iozycore
 COPY --from=build /build/target/*.jar app.jar
 

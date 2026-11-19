@@ -3,6 +3,7 @@ import { Contexte } from './usePleinCadre'
 import { useTheme } from '@/common/lib/theme'
 import { TERRACOTTA, deriverTeintes, enRgb } from '@/common/lib/teinte/derivation'
 import { useAccent } from '@/common/lib/accent'
+import { adresseJaquette } from '@/common/lib/adresseJaquette'
 import { useTeinteJaquette } from '@/common/lib/teinte/useTeinteJaquette'
 
 /**
@@ -77,7 +78,7 @@ export function FondPleinCadre() {
   const { url } = useContext(Contexte)
   return (
     <div aria-hidden="true" className="fond-plein-cadre">
-      {url && <img key={url} src={url} alt="" className="fond-plein-cadre__image" decoding="async" />}
+      {url && <img key={url} src={adresseJaquette(url)} alt="" className="fond-plein-cadre__image" decoding="async" />}
       <div className="fond-plein-cadre__voile" />
       <div className="fond-plein-cadre__aurore" />
     </div>

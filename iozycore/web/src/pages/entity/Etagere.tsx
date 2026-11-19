@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import { Jaquette } from '@/common/components/Jaquette'
+import { adresseJaquette } from '@/common/lib/adresseJaquette'
 import { mouvementReduit } from '@/common/lib/volJaquette'
 import { tonDe } from '@/common/lib/teinte/useTeinteJaquette'
 import type { VolumeAffiche } from './GrilleVolumes'
@@ -423,7 +424,7 @@ function Dos({
       {tranche && (
         // A slice of the cover: the colors of the real book, not its text.
         <img
-          src={tranche}
+          src={adresseJaquette(tranche)}
           alt=""
           loading="lazy"
           decoding="async"

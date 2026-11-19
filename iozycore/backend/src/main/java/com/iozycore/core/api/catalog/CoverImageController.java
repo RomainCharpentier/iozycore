@@ -1,6 +1,7 @@
 package com.iozycore.core.api.catalog;
 
 import com.iozycore.core.metadata.CoverImageReader;
+import com.iozycore.core.metadata.CoverImageStore;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,17 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-/** A cover from a known host, served from this origin (see {@link CoverImageReader}). */
+/**
+ * A cover from a known host, served from this origin (see {@link CoverImageReader}),
+ * and kept once read (see {@link CoverImageStore}).
+ */
 @RestController
 @RequestMapping("/api/covers")
 @Tag(name = "Covers")
 @RequiredArgsConstructor
 public class CoverImageController {
 
-    private final CoverImageReader coverImageReader;
+    private final CoverImageStore coverImageStore;
 
     @Operation(summary = "A cover from a known cover host, served from this origin to read its colors")
     @GetMapping("/image")
@@ -33,7 +37,7 @@ public class CoverImageController {
         if (uri.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        return coverImageReader.read(uri.get())
+        return coverImageStore.get(uri.get())
                 .map(image -> ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(image.contentType()))
                         .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePrivate())

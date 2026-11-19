@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ChevronRight, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Jaquette } from '@/common/components/Jaquette'
+import { adresseJaquette } from '@/common/lib/adresseJaquette'
 import { getEntityTypeVisual } from '@/common/lib/entityTypeVisuals'
 import { gradientFor } from '@/common/theme/gradient'
 import type { AffichageCollection } from '@/common/lib/preferencesCollection'
@@ -325,7 +326,7 @@ function Dos({ volume, jaquetteSerie }: { volume: DosSalle; jaquetteSerie: strin
     <span data-dos="" className={`salle-dos salle-dos-${volume.etat}`}>
       {tranche && (
         <img
-          src={tranche}
+          src={adresseJaquette(tranche)}
           alt=""
           loading="lazy"
           decoding="async"
